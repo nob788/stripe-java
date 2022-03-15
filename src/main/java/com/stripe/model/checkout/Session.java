@@ -10,13 +10,16 @@ import com.stripe.model.HasId;
 import com.stripe.model.LineItem;
 import com.stripe.model.LineItemCollection;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.PaymentLink;
 import com.stripe.model.SetupIntent;
 import com.stripe.model.ShippingDetails;
+import com.stripe.model.ShippingRate;
 import com.stripe.model.StripeObject;
 import com.stripe.model.Subscription;
 import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.param.checkout.SessionExpireParams;
 import com.stripe.param.checkout.SessionListLineItemsParams;
 import com.stripe.param.checkout.SessionListParams;
 import com.stripe.param.checkout.SessionRetrieveParams;
@@ -30,6 +33,10 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(callSuper = false)
 public class Session extends ApiResource implements HasId {
+  /** When set, provides configuration for actions to take if this Checkout Session expires. */
+  @SerializedName("after_expiration")
+  AfterExpiration afterExpiration;
+
   /** Enables user redeemable promotion codes. */
   @SerializedName("allow_promotion_codes")
   Boolean allowPromotionCodes;
@@ -67,6 +74,17 @@ public class Session extends ApiResource implements HasId {
   @SerializedName("client_reference_id")
   String clientReferenceId;
 
+  /** Results of {@code consent_collection} for this session. */
+  @SerializedName("consent")
+  Consent consent;
+
+  /**
+   * When set, provides configuration for the Checkout Session to gather active consent from
+   * customers.
+   */
+  @SerializedName("consent_collection")
+  ConsentCollection consentCollection;
+
   /**
    * Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO currency code</a>,
    * in lowercase. Must be a <a href="https://stripe.com/docs/currencies">supported currency</a>.
@@ -85,6 +103,14 @@ public class Session extends ApiResource implements HasId {
   ExpandableField<Customer> customer;
 
   /**
+   * Configure whether a Checkout Session creates a Customer when the Checkout Session completes.
+   *
+   * <p>One of {@code always}, or {@code if_required}.
+   */
+  @SerializedName("customer_creation")
+  String customerCreation;
+
+  /**
    * The customer details including the customer's tax exempt status and the customer's tax IDs.
    * Only present on Sessions in {@code payment} or {@code subscription} mode.
    */
@@ -99,6 +125,10 @@ public class Session extends ApiResource implements HasId {
    */
   @SerializedName("customer_email")
   String customerEmail;
+
+  /** The timestamp at which the Checkout Session will expire. */
+  @SerializedName("expires_at")
+  Long expiresAt;
 
   /** Unique identifier for the object. Used to pass to {@code redirectToCheckout} in Stripe.js. */
   @Getter(onMethod_ = {@Override})
@@ -160,6 +190,12 @@ public class Session extends ApiResource implements HasId {
   @Setter(lombok.AccessLevel.NONE)
   ExpandableField<PaymentIntent> paymentIntent;
 
+  /** The ID of the Payment Link that created this Session. */
+  @SerializedName("payment_link")
+  @Getter(lombok.AccessLevel.NONE)
+  @Setter(lombok.AccessLevel.NONE)
+  ExpandableField<PaymentLink> paymentLink;
+
   /**
    * Payment-method-specific configuration for the PaymentIntent or SetupIntent of this
    * CheckoutSession.
@@ -180,6 +216,13 @@ public class Session extends ApiResource implements HasId {
   @SerializedName("payment_status")
   String paymentStatus;
 
+  @SerializedName("phone_number_collection")
+  PhoneNumberCollection phoneNumberCollection;
+
+  /** The ID of the original expired Checkout Session that triggered the recovery flow. */
+  @SerializedName("recovered_from")
+  String recoveredFrom;
+
   /** The ID of the SetupIntent for Checkout Sessions in {@code setup} mode. */
   @SerializedName("setup_intent")
   @Getter(lombok.AccessLevel.NONE)
@@ -195,6 +238,22 @@ public class Session extends ApiResource implements HasId {
    */
   @SerializedName("shipping_address_collection")
   ShippingAddressCollection shippingAddressCollection;
+
+  /** The shipping rate options applied to this Session. */
+  @SerializedName("shipping_options")
+  List<Session.ShippingOption> shippingOptions;
+
+  /** The ID of the ShippingRate for Checkout Sessions in {@code payment} mode. */
+  @SerializedName("shipping_rate")
+  @Getter(lombok.AccessLevel.NONE)
+  @Setter(lombok.AccessLevel.NONE)
+  ExpandableField<ShippingRate> shippingRate;
+
+  /**
+   * The status of the Checkout Session, one of {@code open}, {@code complete}, or {@code expired}.
+   */
+  @SerializedName("status")
+  String status;
 
   /**
    * Describes the type of transaction being performed by Checkout in order to customize relevant
@@ -268,6 +327,24 @@ public class Session extends ApiResource implements HasId {
         new ExpandableField<PaymentIntent>(expandableObject.getId(), expandableObject);
   }
 
+  /** Get ID of expandable {@code paymentLink} object. */
+  public String getPaymentLink() {
+    return (this.paymentLink != null) ? this.paymentLink.getId() : null;
+  }
+
+  public void setPaymentLink(String id) {
+    this.paymentLink = ApiResource.setExpandableFieldId(id, this.paymentLink);
+  }
+
+  /** Get expanded {@code paymentLink}. */
+  public PaymentLink getPaymentLinkObject() {
+    return (this.paymentLink != null) ? this.paymentLink.getExpanded() : null;
+  }
+
+  public void setPaymentLinkObject(PaymentLink expandableObject) {
+    this.paymentLink = new ExpandableField<PaymentLink>(expandableObject.getId(), expandableObject);
+  }
+
   /** Get ID of expandable {@code setupIntent} object. */
   public String getSetupIntent() {
     return (this.setupIntent != null) ? this.setupIntent.getId() : null;
@@ -284,6 +361,25 @@ public class Session extends ApiResource implements HasId {
 
   public void setSetupIntentObject(SetupIntent expandableObject) {
     this.setupIntent = new ExpandableField<SetupIntent>(expandableObject.getId(), expandableObject);
+  }
+
+  /** Get ID of expandable {@code shippingRate} object. */
+  public String getShippingRate() {
+    return (this.shippingRate != null) ? this.shippingRate.getId() : null;
+  }
+
+  public void setShippingRate(String id) {
+    this.shippingRate = ApiResource.setExpandableFieldId(id, this.shippingRate);
+  }
+
+  /** Get expanded {@code shippingRate}. */
+  public ShippingRate getShippingRateObject() {
+    return (this.shippingRate != null) ? this.shippingRate.getExpanded() : null;
+  }
+
+  public void setShippingRateObject(ShippingRate expandableObject) {
+    this.shippingRate =
+        new ExpandableField<ShippingRate>(expandableObject.getId(), expandableObject);
   }
 
   /** Get ID of expandable {@code subscription} object. */
@@ -385,6 +481,78 @@ public class Session extends ApiResource implements HasId {
     return ApiResource.request(ApiResource.RequestMethod.POST, url, params, Session.class, options);
   }
 
+  /**
+   * A Session can be expired when it is in one of these statuses: <code>open</code>
+   *
+   * <p>After it expires, a customer can’t complete a Session and customers loading the Session see
+   * a message saying the Session is expired.
+   */
+  public Session expire() throws StripeException {
+    return expire((Map<String, Object>) null, (RequestOptions) null);
+  }
+
+  /**
+   * A Session can be expired when it is in one of these statuses: <code>open</code>
+   *
+   * <p>After it expires, a customer can’t complete a Session and customers loading the Session see
+   * a message saying the Session is expired.
+   */
+  public Session expire(RequestOptions options) throws StripeException {
+    return expire((Map<String, Object>) null, options);
+  }
+
+  /**
+   * A Session can be expired when it is in one of these statuses: <code>open</code>
+   *
+   * <p>After it expires, a customer can’t complete a Session and customers loading the Session see
+   * a message saying the Session is expired.
+   */
+  public Session expire(Map<String, Object> params) throws StripeException {
+    return expire(params, (RequestOptions) null);
+  }
+
+  /**
+   * A Session can be expired when it is in one of these statuses: <code>open</code>
+   *
+   * <p>After it expires, a customer can’t complete a Session and customers loading the Session see
+   * a message saying the Session is expired.
+   */
+  public Session expire(Map<String, Object> params, RequestOptions options) throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/checkout/sessions/%s/expire", ApiResource.urlEncodeId(this.getId())));
+    return ApiResource.request(ApiResource.RequestMethod.POST, url, params, Session.class, options);
+  }
+
+  /**
+   * A Session can be expired when it is in one of these statuses: <code>open</code>
+   *
+   * <p>After it expires, a customer can’t complete a Session and customers loading the Session see
+   * a message saying the Session is expired.
+   */
+  public Session expire(SessionExpireParams params) throws StripeException {
+    return expire(params, (RequestOptions) null);
+  }
+
+  /**
+   * A Session can be expired when it is in one of these statuses: <code>open</code>
+   *
+   * <p>After it expires, a customer can’t complete a Session and customers loading the Session see
+   * a message saying the Session is expired.
+   */
+  public Session expire(SessionExpireParams params, RequestOptions options) throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/checkout/sessions/%s/expire", ApiResource.urlEncodeId(this.getId())));
+    return ApiResource.request(ApiResource.RequestMethod.POST, url, params, Session.class, options);
+  }
+
   /** Returns a list of Line Items */
   public LineItemCollection listLineItems(Map<String, Object> params) throws StripeException {
     return listLineItems(params, (RequestOptions) null);
@@ -425,6 +593,46 @@ public class Session extends ApiResource implements HasId {
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
+  public static class AfterExpiration extends StripeObject {
+    /** When set, configuration used to recover the Checkout Session on expiry. */
+    @SerializedName("recovery")
+    Recovery recovery;
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class Recovery extends StripeObject {
+      /**
+       * Enables user redeemable promotion codes on the recovered Checkout Sessions. Defaults to
+       * {@code false}
+       */
+      @SerializedName("allow_promotion_codes")
+      Boolean allowPromotionCodes;
+
+      /**
+       * If {@code true}, a recovery url will be generated to recover this Checkout Session if it
+       * expires before a transaction is completed. It will be attached to the Checkout Session
+       * object upon expiration.
+       */
+      @SerializedName("enabled")
+      Boolean enabled;
+
+      /** The timestamp at which the recovery URL will expire. */
+      @SerializedName("expires_at")
+      Long expiresAt;
+
+      /**
+       * URL that creates a new Checkout Session when clicked that is a copy of this expired
+       * Checkout Session.
+       */
+      @SerializedName("url")
+      String url;
+    }
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
   public static class AutomaticTax extends StripeObject {
     /** Indicates whether automatic tax is enabled for the session. */
     @SerializedName("enabled")
@@ -442,10 +650,49 @@ public class Session extends ApiResource implements HasId {
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
+  public static class Consent extends StripeObject {
+    /**
+     * If {@code opt_in}, the customer consents to receiving promotional communications from the
+     * merchant about this Checkout Session.
+     *
+     * <p>One of {@code opt_in}, or {@code opt_out}.
+     */
+    @SerializedName("promotions")
+    String promotions;
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
+  public static class ConsentCollection extends StripeObject {
+    /**
+     * If set to {@code auto}, enables the collection of customer consent for promotional
+     * communications. The Checkout Session will determine whether to display an option to opt into
+     * promotional communication from the merchant depending on the customer's locale. Only
+     * available to US merchants.
+     *
+     * <p>Equal to {@code auto}.
+     */
+    @SerializedName("promotions")
+    String promotions;
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
   public static class CustomerDetails extends StripeObject {
-    /** The customer’s email at time of checkout. */
+    /**
+     * The email associated with the Customer, if one exists, on the Checkout Session at the time of
+     * checkout or at time of session expiry. Otherwise, if the customer has consented to
+     * promotional content, this value is the most recent valid email provided by the customer on
+     * the Checkout form.
+     */
     @SerializedName("email")
     String email;
+
+    /** The customer's phone number at the time of checkout. */
+    @SerializedName("phone")
+    String phone;
 
     /**
      * The customer’s tax exempt status at time of checkout.
@@ -471,7 +718,8 @@ public class Session extends ApiResource implements HasId {
        * {@code jp_cn}, {@code jp_rn}, {@code li_uid}, {@code my_itn}, {@code us_ein}, {@code
        * kr_brn}, {@code ca_qst}, {@code ca_gst_hst}, {@code ca_pst_bc}, {@code ca_pst_mb}, {@code
        * ca_pst_sk}, {@code my_sst}, {@code sg_gst}, {@code ae_trn}, {@code cl_tin}, {@code sa_vat},
-       * {@code id_npwp}, {@code my_frp}, {@code il_vat}, or {@code unknown}.
+       * {@code id_npwp}, {@code my_frp}, {@code il_vat}, {@code ge_vat}, {@code ua_vat}, {@code
+       * is_vat}, or {@code unknown}.
        */
       @SerializedName("type")
       String type;
@@ -491,6 +739,9 @@ public class Session extends ApiResource implements HasId {
 
     @SerializedName("boleto")
     Boleto boleto;
+
+    @SerializedName("konbini")
+    Konbini konbini;
 
     @SerializedName("oxxo")
     Oxxo oxxo;
@@ -525,6 +776,13 @@ public class Session extends ApiResource implements HasId {
         /** A URL for custom mandate text. */
         @SerializedName("custom_mandate_url")
         String customMandateUrl;
+
+        /**
+         * List of Stripe products where this mandate can be selected automatically. Returned when
+         * the Session is in {@code setup} mode.
+         */
+        @SerializedName("default_for")
+        List<String> defaultFor;
 
         /**
          * Description of the interval. Only required if the 'payment_schedule' parameter is
@@ -562,6 +820,40 @@ public class Session extends ApiResource implements HasId {
        */
       @SerializedName("expires_after_days")
       Long expiresAfterDays;
+
+      /**
+       * Indicates that you intend to make future payments with this PaymentIntent's payment method.
+       *
+       * <p>Providing this parameter will <a
+       * href="https://stripe.com/docs/payments/save-during-payment">attach the payment method</a>
+       * to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any
+       * required actions from the user are complete. If no Customer was provided, the payment
+       * method can still be <a
+       * href="https://stripe.com/docs/api/payment_methods/attach">attached</a> to a Customer after
+       * the transaction completes.
+       *
+       * <p>When processing card payments, Stripe also uses {@code setup_future_usage} to
+       * dynamically optimize your payment flow and comply with regional legislation and network
+       * rules, such as <a href="https://stripe.com/docs/strong-customer-authentication">SCA</a>.
+       *
+       * <p>One of {@code none}, {@code off_session}, or {@code on_session}.
+       */
+      @SerializedName("setup_future_usage")
+      String setupFutureUsage;
+    }
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class Konbini extends StripeObject {
+      /**
+       * The number of calendar days (between 1 and 60) after which Konbini payment instructions
+       * will expire. For example, if a PaymentIntent is confirmed with Konbini and {@code
+       * expires_after_days} set to 2 on Monday JST, the instructions will expire on Wednesday
+       * 23:59:59 JST.
+       */
+      @SerializedName("expires_after_days")
+      Long expiresAfterDays;
     }
 
     @Getter
@@ -575,7 +867,36 @@ public class Session extends ApiResource implements HasId {
        */
       @SerializedName("expires_after_days")
       Long expiresAfterDays;
+
+      /**
+       * Indicates that you intend to make future payments with this PaymentIntent's payment method.
+       *
+       * <p>Providing this parameter will <a
+       * href="https://stripe.com/docs/payments/save-during-payment">attach the payment method</a>
+       * to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any
+       * required actions from the user are complete. If no Customer was provided, the payment
+       * method can still be <a
+       * href="https://stripe.com/docs/api/payment_methods/attach">attached</a> to a Customer after
+       * the transaction completes.
+       *
+       * <p>When processing card payments, Stripe also uses {@code setup_future_usage} to
+       * dynamically optimize your payment flow and comply with regional legislation and network
+       * rules, such as <a href="https://stripe.com/docs/strong-customer-authentication">SCA</a>.
+       *
+       * <p>Equal to {@code none}.
+       */
+      @SerializedName("setup_future_usage")
+      String setupFutureUsage;
     }
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
+  public static class PhoneNumberCollection extends StripeObject {
+    /** Indicates whether phone number collection is enabled for the session. */
+    @SerializedName("enabled")
+    Boolean enabled;
   }
 
   @Getter
@@ -589,6 +910,40 @@ public class Session extends ApiResource implements HasId {
      */
     @SerializedName("allowed_countries")
     List<String> allowedCountries;
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
+  public static class ShippingOption extends StripeObject {
+    /** A non-negative integer in cents representing how much to charge. */
+    @SerializedName("shipping_amount")
+    Long shippingAmount;
+
+    /** The shipping rate. */
+    @SerializedName("shipping_rate")
+    @Getter(lombok.AccessLevel.NONE)
+    @Setter(lombok.AccessLevel.NONE)
+    ExpandableField<ShippingRate> shippingRate;
+
+    /** Get ID of expandable {@code shippingRate} object. */
+    public String getShippingRate() {
+      return (this.shippingRate != null) ? this.shippingRate.getId() : null;
+    }
+
+    public void setShippingRate(String id) {
+      this.shippingRate = ApiResource.setExpandableFieldId(id, this.shippingRate);
+    }
+
+    /** Get expanded {@code shippingRate}. */
+    public ShippingRate getShippingRateObject() {
+      return (this.shippingRate != null) ? this.shippingRate.getExpanded() : null;
+    }
+
+    public void setShippingRateObject(ShippingRate expandableObject) {
+      this.shippingRate =
+          new ExpandableField<ShippingRate>(expandableObject.getId(), expandableObject);
+    }
   }
 
   @Getter

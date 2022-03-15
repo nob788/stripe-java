@@ -88,6 +88,12 @@ public class PaymentMethod extends ApiResource implements HasId, MetadataStore<P
   @SerializedName("interac_present")
   InteracPresent interacPresent;
 
+  @SerializedName("klarna")
+  Klarna klarna;
+
+  @SerializedName("konbini")
+  Konbini konbini;
+
   /**
    * Has the value {@code true} if the object exists in live mode or the value {@code false} if the
    * object exists in test mode.
@@ -131,8 +137,8 @@ public class PaymentMethod extends ApiResource implements HasId, MetadataStore<P
    * <p>One of {@code acss_debit}, {@code afterpay_clearpay}, {@code alipay}, {@code au_becs_debit},
    * {@code bacs_debit}, {@code bancontact}, {@code boleto}, {@code card}, {@code card_present},
    * {@code eps}, {@code fpx}, {@code giropay}, {@code grabpay}, {@code ideal}, {@code
-   * interac_present}, {@code oxxo}, {@code p24}, {@code sepa_debit}, {@code sofort}, or {@code
-   * wechat_pay}.
+   * interac_present}, {@code klarna}, {@code konbini}, {@code oxxo}, {@code p24}, {@code
+   * sepa_debit}, {@code sofort}, or {@code wechat_pay}.
    */
   @SerializedName("type")
   String type;
@@ -297,25 +303,41 @@ public class PaymentMethod extends ApiResource implements HasId, MetadataStore<P
         ApiResource.RequestMethod.POST, url, params, PaymentMethod.class, options);
   }
 
-  /** Returns a list of PaymentMethods for a given Customer. */
+  /**
+   * Returns a list of PaymentMethods. For listing a customer’s payment methods, you should use <a
+   * href="https://stripe.com/docs/api/payment_methods/customer_list">List a Customer’s
+   * PaymentMethods</a>
+   */
   public static PaymentMethodCollection list(Map<String, Object> params) throws StripeException {
     return list(params, (RequestOptions) null);
   }
 
-  /** Returns a list of PaymentMethods for a given Customer. */
+  /**
+   * Returns a list of PaymentMethods. For listing a customer’s payment methods, you should use <a
+   * href="https://stripe.com/docs/api/payment_methods/customer_list">List a Customer’s
+   * PaymentMethods</a>
+   */
   public static PaymentMethodCollection list(Map<String, Object> params, RequestOptions options)
       throws StripeException {
     String url = String.format("%s%s", Stripe.getApiBase(), "/v1/payment_methods");
     return ApiResource.requestCollection(url, params, PaymentMethodCollection.class, options);
   }
 
-  /** Returns a list of PaymentMethods for a given Customer. */
+  /**
+   * Returns a list of PaymentMethods. For listing a customer’s payment methods, you should use <a
+   * href="https://stripe.com/docs/api/payment_methods/customer_list">List a Customer’s
+   * PaymentMethods</a>
+   */
   public static PaymentMethodCollection list(PaymentMethodListParams params)
       throws StripeException {
     return list(params, (RequestOptions) null);
   }
 
-  /** Returns a list of PaymentMethods for a given Customer. */
+  /**
+   * Returns a list of PaymentMethods. For listing a customer’s payment methods, you should use <a
+   * href="https://stripe.com/docs/api/payment_methods/customer_list">List a Customer’s
+   * PaymentMethods</a>
+   */
   public static PaymentMethodCollection list(PaymentMethodListParams params, RequestOptions options)
       throws StripeException {
     String url = String.format("%s%s", Stripe.getApiBase(), "/v1/payment_methods");
@@ -420,22 +442,34 @@ public class PaymentMethod extends ApiResource implements HasId, MetadataStore<P
         ApiResource.RequestMethod.POST, url, params, PaymentMethod.class, options);
   }
 
-  /** Detaches a PaymentMethod object from a Customer. */
+  /**
+   * Detaches a PaymentMethod object from a Customer. After a PaymentMethod is detached, it can no
+   * longer be used for a payment or re-attached to a Customer.
+   */
   public PaymentMethod detach() throws StripeException {
     return detach((Map<String, Object>) null, (RequestOptions) null);
   }
 
-  /** Detaches a PaymentMethod object from a Customer. */
+  /**
+   * Detaches a PaymentMethod object from a Customer. After a PaymentMethod is detached, it can no
+   * longer be used for a payment or re-attached to a Customer.
+   */
   public PaymentMethod detach(RequestOptions options) throws StripeException {
     return detach((Map<String, Object>) null, options);
   }
 
-  /** Detaches a PaymentMethod object from a Customer. */
+  /**
+   * Detaches a PaymentMethod object from a Customer. After a PaymentMethod is detached, it can no
+   * longer be used for a payment or re-attached to a Customer.
+   */
   public PaymentMethod detach(Map<String, Object> params) throws StripeException {
     return detach(params, (RequestOptions) null);
   }
 
-  /** Detaches a PaymentMethod object from a Customer. */
+  /**
+   * Detaches a PaymentMethod object from a Customer. After a PaymentMethod is detached, it can no
+   * longer be used for a payment or re-attached to a Customer.
+   */
   public PaymentMethod detach(Map<String, Object> params, RequestOptions options)
       throws StripeException {
     String url =
@@ -447,12 +481,18 @@ public class PaymentMethod extends ApiResource implements HasId, MetadataStore<P
         ApiResource.RequestMethod.POST, url, params, PaymentMethod.class, options);
   }
 
-  /** Detaches a PaymentMethod object from a Customer. */
+  /**
+   * Detaches a PaymentMethod object from a Customer. After a PaymentMethod is detached, it can no
+   * longer be used for a payment or re-attached to a Customer.
+   */
   public PaymentMethod detach(PaymentMethodDetachParams params) throws StripeException {
     return detach(params, (RequestOptions) null);
   }
 
-  /** Detaches a PaymentMethod object from a Customer. */
+  /**
+   * Detaches a PaymentMethod object from a Customer. After a PaymentMethod is detached, it can no
+   * longer be used for a payment or re-attached to a Customer.
+   */
   public PaymentMethod detach(PaymentMethodDetachParams params, RequestOptions options)
       throws StripeException {
     String url =
@@ -868,11 +908,12 @@ public class PaymentMethod extends ApiResource implements HasId, MetadataStore<P
     String accountHolderType;
 
     /**
-     * The customer's bank, if provided. Can be one of {@code affin_bank}, {@code alliance_bank},
-     * {@code ambank}, {@code bank_islam}, {@code bank_muamalat}, {@code bank_rakyat}, {@code bsn},
-     * {@code cimb}, {@code hong_leong_bank}, {@code hsbc}, {@code kfh}, {@code maybank2u}, {@code
-     * ocbc}, {@code public_bank}, {@code rhb}, {@code standard_chartered}, {@code uob}, {@code
-     * deutsche_bank}, {@code maybank2e}, or {@code pb_enterprise}.
+     * The customer's bank, if provided. Can be one of {@code affin_bank}, {@code agrobank}, {@code
+     * alliance_bank}, {@code ambank}, {@code bank_islam}, {@code bank_muamalat}, {@code
+     * bank_rakyat}, {@code bsn}, {@code cimb}, {@code hong_leong_bank}, {@code hsbc}, {@code kfh},
+     * {@code maybank2u}, {@code ocbc}, {@code public_bank}, {@code rhb}, {@code
+     * standard_chartered}, {@code uob}, {@code deutsche_bank}, {@code maybank2e}, or {@code
+     * pb_enterprise}.
      */
     @SerializedName("bank")
     String bank;
@@ -916,6 +957,37 @@ public class PaymentMethod extends ApiResource implements HasId, MetadataStore<P
   @Setter
   @EqualsAndHashCode(callSuper = false)
   public static class InteracPresent extends StripeObject {}
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
+  public static class Klarna extends StripeObject {
+    /** The customer's date of birth, if provided. */
+    @SerializedName("dob")
+    DateOfBirth dob;
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class DateOfBirth extends StripeObject {
+      /** The day of birth, between 1 and 31. */
+      @SerializedName("day")
+      Long day;
+
+      /** The month of birth, between 1 and 12. */
+      @SerializedName("month")
+      Long month;
+
+      /** The four-digit year of birth. */
+      @SerializedName("year")
+      Long year;
+    }
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
+  public static class Konbini extends StripeObject {}
 
   @Getter
   @Setter

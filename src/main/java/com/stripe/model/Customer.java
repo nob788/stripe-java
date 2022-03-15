@@ -4,11 +4,13 @@ package com.stripe.model;
 import com.google.gson.annotations.SerializedName;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.testhelpers.TestClock;
 import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.CustomerBalanceTransactionsParams;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerListParams;
+import com.stripe.param.CustomerListPaymentMethodsParams;
 import com.stripe.param.CustomerRetrieveParams;
 import com.stripe.param.CustomerUpdateParams;
 import java.util.List;
@@ -168,6 +170,12 @@ public class Customer extends ApiResource implements HasId, MetadataStore<Custom
   @SerializedName("tax_ids")
   TaxIdCollection taxIds;
 
+  /** ID of the test clock this customer belongs to. */
+  @SerializedName("test_clock")
+  @Getter(lombok.AccessLevel.NONE)
+  @Setter(lombok.AccessLevel.NONE)
+  ExpandableField<TestClock> testClock;
+
   /** Get ID of expandable {@code defaultSource} object. */
   public String getDefaultSource() {
     return (this.defaultSource != null) ? this.defaultSource.getId() : null;
@@ -185,6 +193,24 @@ public class Customer extends ApiResource implements HasId, MetadataStore<Custom
   public void setDefaultSourceObject(PaymentSource expandableObject) {
     this.defaultSource =
         new ExpandableField<PaymentSource>(expandableObject.getId(), expandableObject);
+  }
+
+  /** Get ID of expandable {@code testClock} object. */
+  public String getTestClock() {
+    return (this.testClock != null) ? this.testClock.getId() : null;
+  }
+
+  public void setTestClock(String id) {
+    this.testClock = ApiResource.setExpandableFieldId(id, this.testClock);
+  }
+
+  /** Get expanded {@code testClock}. */
+  public TestClock getTestClockObject() {
+    return (this.testClock != null) ? this.testClock.getExpanded() : null;
+  }
+
+  public void setTestClockObject(TestClock expandableObject) {
+    this.testClock = new ExpandableField<TestClock>(expandableObject.getId(), expandableObject);
   }
 
   /**
@@ -249,26 +275,17 @@ public class Customer extends ApiResource implements HasId, MetadataStore<Custom
         ApiResource.RequestMethod.POST, url, params, Customer.class, options);
   }
 
-  /**
-   * Retrieves the details of an existing customer. You need only supply the unique customer
-   * identifier that was returned upon customer creation.
-   */
+  /** Retrieves a Customer object. */
   public static Customer retrieve(String customer) throws StripeException {
     return retrieve(customer, (Map<String, Object>) null, (RequestOptions) null);
   }
 
-  /**
-   * Retrieves the details of an existing customer. You need only supply the unique customer
-   * identifier that was returned upon customer creation.
-   */
+  /** Retrieves a Customer object. */
   public static Customer retrieve(String customer, RequestOptions options) throws StripeException {
     return retrieve(customer, (Map<String, Object>) null, options);
   }
 
-  /**
-   * Retrieves the details of an existing customer. You need only supply the unique customer
-   * identifier that was returned upon customer creation.
-   */
+  /** Retrieves a Customer object. */
   public static Customer retrieve(
       String customer, Map<String, Object> params, RequestOptions options) throws StripeException {
     String url =
@@ -279,10 +296,7 @@ public class Customer extends ApiResource implements HasId, MetadataStore<Custom
     return ApiResource.request(ApiResource.RequestMethod.GET, url, params, Customer.class, options);
   }
 
-  /**
-   * Retrieves the details of an existing customer. You need only supply the unique customer
-   * identifier that was returned upon customer creation.
-   */
+  /** Retrieves a Customer object. */
   public static Customer retrieve(
       String customer, CustomerRetrieveParams params, RequestOptions options)
       throws StripeException {
@@ -419,6 +433,42 @@ public class Customer extends ApiResource implements HasId, MetadataStore<Custom
             String.format("/v1/customers/%s", ApiResource.urlEncodeId(this.getId())));
     return ApiResource.request(
         ApiResource.RequestMethod.DELETE, url, params, Customer.class, options);
+  }
+
+  /** Returns a list of PaymentMethods for a given Customer. */
+  public PaymentMethodCollection listPaymentMethods(Map<String, Object> params)
+      throws StripeException {
+    return listPaymentMethods(params, (RequestOptions) null);
+  }
+
+  /** Returns a list of PaymentMethods for a given Customer. */
+  public PaymentMethodCollection listPaymentMethods(
+      Map<String, Object> params, RequestOptions options) throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/customers/%s/payment_methods", ApiResource.urlEncodeId(this.getId())));
+    return ApiResource.requestCollection(url, params, PaymentMethodCollection.class, options);
+  }
+
+  /** Returns a list of PaymentMethods for a given Customer. */
+  public PaymentMethodCollection listPaymentMethods(CustomerListPaymentMethodsParams params)
+      throws StripeException {
+    return listPaymentMethods(params, (RequestOptions) null);
+  }
+
+  /** Returns a list of PaymentMethods for a given Customer. */
+  public PaymentMethodCollection listPaymentMethods(
+      CustomerListPaymentMethodsParams params, RequestOptions options) throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/customers/%s/payment_methods", ApiResource.urlEncodeId(this.getId())));
+    return ApiResource.requestCollection(url, params, PaymentMethodCollection.class, options);
   }
 
   /**

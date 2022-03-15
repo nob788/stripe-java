@@ -62,6 +62,10 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
   @SerializedName("first_name_kanji")
   String firstNameKanji;
 
+  /** A list of alternate names or aliases that the person is known by. */
+  @SerializedName("full_name_aliases")
+  Object fullNameAliases;
+
   /**
    * The person's gender (International regulations require either &quot;male&quot; or
    * &quot;female&quot;).
@@ -154,6 +158,7 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
       String firstName,
       String firstNameKana,
       String firstNameKanji,
+      Object fullNameAliases,
       String gender,
       String idNumber,
       String lastName,
@@ -179,6 +184,7 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
     this.firstName = firstName;
     this.firstNameKana = firstNameKana;
     this.firstNameKanji = firstNameKanji;
+    this.fullNameAliases = fullNameAliases;
     this.gender = gender;
     this.idNumber = idNumber;
     this.lastName = lastName;
@@ -222,6 +228,8 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
 
     private String firstNameKanji;
 
+    private Object fullNameAliases;
+
     private String gender;
 
     private String idNumber;
@@ -264,6 +272,7 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
           this.firstName,
           this.firstNameKana,
           this.firstNameKanji,
+          this.fullNameAliases,
           this.gender,
           this.idNumber,
           this.lastName,
@@ -389,6 +398,46 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
     /** The Kanji variation of the person's first name (Japan only). */
     public Builder setFirstNameKanji(String firstNameKanji) {
       this.firstNameKanji = firstNameKanji;
+      return this;
+    }
+
+    /**
+     * Add an element to `fullNameAliases` list. A list is initialized for the first `add/addAll`
+     * call, and subsequent calls adds additional elements to the original list. See {@link
+     * PersonCollectionCreateParams#fullNameAliases} for the field documentation.
+     */
+    @SuppressWarnings("unchecked")
+    public Builder addFullNameAliase(String element) {
+      if (this.fullNameAliases == null || this.fullNameAliases instanceof EmptyParam) {
+        this.fullNameAliases = new ArrayList<String>();
+      }
+      ((List<String>) this.fullNameAliases).add(element);
+      return this;
+    }
+
+    /**
+     * Add all elements to `fullNameAliases` list. A list is initialized for the first `add/addAll`
+     * call, and subsequent calls adds additional elements to the original list. See {@link
+     * PersonCollectionCreateParams#fullNameAliases} for the field documentation.
+     */
+    @SuppressWarnings("unchecked")
+    public Builder addAllFullNameAliase(List<String> elements) {
+      if (this.fullNameAliases == null || this.fullNameAliases instanceof EmptyParam) {
+        this.fullNameAliases = new ArrayList<String>();
+      }
+      ((List<String>) this.fullNameAliases).addAll(elements);
+      return this;
+    }
+
+    /** A list of alternate names or aliases that the person is known by. */
+    public Builder setFullNameAliases(EmptyParam fullNameAliases) {
+      this.fullNameAliases = fullNameAliases;
+      return this;
+    }
+
+    /** A list of alternate names or aliases that the person is known by. */
+    public Builder setFullNameAliases(List<String> fullNameAliases) {
+      this.fullNameAliases = fullNameAliases;
       return this;
     }
 
@@ -1523,9 +1572,9 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
   @Getter
   public static class Relationship {
     /**
-     * Whether the person is a director of the account's legal entity. Currently only required for
-     * accounts in the EU. Directors are typically members of the governing board of the company, or
-     * responsible for ensuring the company meets its regulatory obligations.
+     * Whether the person is a director of the account's legal entity. Directors are typically
+     * members of the governing board of the company, or responsible for ensuring the company meets
+     * its regulatory obligations.
      */
     @SerializedName("director")
     Boolean director;
@@ -1617,9 +1666,9 @@ public class PersonCollectionCreateParams extends ApiRequestParams {
       }
 
       /**
-       * Whether the person is a director of the account's legal entity. Currently only required for
-       * accounts in the EU. Directors are typically members of the governing board of the company,
-       * or responsible for ensuring the company meets its regulatory obligations.
+       * Whether the person is a director of the account's legal entity. Directors are typically
+       * members of the governing board of the company, or responsible for ensuring the company
+       * meets its regulatory obligations.
        */
       public Builder setDirector(Boolean director) {
         this.director = director;

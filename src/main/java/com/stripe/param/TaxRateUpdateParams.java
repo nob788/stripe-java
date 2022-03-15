@@ -351,11 +351,17 @@ public class TaxRateUpdateParams extends ApiRequestParams {
     @SerializedName("hst")
     HST("hst"),
 
+    @SerializedName("jct")
+    JCT("jct"),
+
     @SerializedName("pst")
     PST("pst"),
 
     @SerializedName("qst")
     QST("qst"),
+
+    @SerializedName("rst")
+    RST("rst"),
 
     @SerializedName("sales_tax")
     SALES_TAX("sales_tax"),

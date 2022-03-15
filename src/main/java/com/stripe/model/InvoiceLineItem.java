@@ -29,13 +29,13 @@ public class InvoiceLineItem extends StripeObject implements HasId {
   @SerializedName("description")
   String description;
 
-  /** The amount of discount calculated per discount for this line item. */
-  @SerializedName("discount_amounts")
-  List<DiscountAmount> discountAmounts;
-
   /** If true, discounts will apply to this line item. Always false for prorations. */
   @SerializedName("discountable")
   Boolean discountable;
+
+  /** The amount of discount calculated per discount for this line item. */
+  @SerializedName("discount_amounts")
+  List<InvoiceLineItem.DiscountAmount> discountAmounts;
 
   /**
    * The discounts applied to the invoice line item. Line item discounts are applied before invoice
@@ -94,6 +94,10 @@ public class InvoiceLineItem extends StripeObject implements HasId {
   /** Whether this is a proration. */
   @SerializedName("proration")
   Boolean proration;
+
+  /** Additional details for proration line items. */
+  @SerializedName("proration_details")
+  ProrationDetails prorationDetails;
 
   /** The quantity of the subscription, if the line item is a subscription or a proration. */
   @SerializedName("quantity")

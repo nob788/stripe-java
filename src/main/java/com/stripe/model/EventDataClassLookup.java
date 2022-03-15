@@ -52,6 +52,7 @@ final class EventDataClassLookup {
     classLookup.put("order_item", OrderItem.class);
     classLookup.put("order_return", OrderReturn.class);
     classLookup.put("payment_intent", PaymentIntent.class);
+    classLookup.put("payment_link", PaymentLink.class);
     classLookup.put("payment_method", PaymentMethod.class);
     classLookup.put("payout", Payout.class);
     classLookup.put("person", Person.class);
@@ -67,6 +68,7 @@ final class EventDataClassLookup {
     classLookup.put("review", Review.class);
     classLookup.put("setup_attempt", SetupAttempt.class);
     classLookup.put("setup_intent", SetupIntent.class);
+    classLookup.put("shipping_rate", ShippingRate.class);
     classLookup.put("sku", Sku.class);
     classLookup.put("source", Source.class);
     classLookup.put("source_mandate_notification", SourceMandateNotification.class);
@@ -116,6 +118,8 @@ final class EventDataClassLookup {
     classLookup.put("terminal.connection_token", com.stripe.model.terminal.ConnectionToken.class);
     classLookup.put("terminal.location", com.stripe.model.terminal.Location.class);
     classLookup.put("terminal.reader", com.stripe.model.terminal.Reader.class);
+
+    classLookup.put("test_helpers.test_clock", com.stripe.model.testhelpers.TestClock.class);
   }
 
   public static Class<? extends StripeObject> findClass(String objectType) {

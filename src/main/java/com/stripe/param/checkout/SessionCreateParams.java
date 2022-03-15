@@ -13,6 +13,10 @@ import lombok.Getter;
 
 @Getter
 public class SessionCreateParams extends ApiRequestParams {
+  /** Configure actions after a Checkout Session has expired. */
+  @SerializedName("after_expiration")
+  AfterExpiration afterExpiration;
+
   /** Enables user redeemable promotion codes. */
   @SerializedName("allow_promotion_codes")
   Boolean allowPromotionCodes;
@@ -42,16 +46,23 @@ public class SessionCreateParams extends ApiRequestParams {
   @SerializedName("client_reference_id")
   String clientReferenceId;
 
+  /** Configure fields for the Checkout Session to gather active consent from customers. */
+  @SerializedName("consent_collection")
+  ConsentCollection consentCollection;
+
   /**
    * ID of an existing Customer, if one exists. In {@code payment} mode, the customer’s most recent
    * card payment method will be used to prefill the email, name, card details, and billing address
    * on the Checkout page. In {@code subscription} mode, the customer’s <a
    * href="https://stripe.com/docs/api/customers/update#update_customer-invoice_settings-default_payment_method">default
    * payment method</a> will be used if it’s a card, and otherwise the most recent card will be
-   * used. A valid billing address is required for Checkout to prefill the customer's card details.
+   * used. A valid billing address, billing name and billing email are required on the payment
+   * method for Checkout to prefill the customer's card details.
    *
-   * <p>If the customer changes their email on the Checkout page, the Customer object will be
-   * updated with the new email.
+   * <p>If the Customer already has a valid <a
+   * href="https://stripe.com/docs/api/customers/object#customer_object-email">email</a> set, the
+   * email will be prefilled and not editable in Checkout. If the Customer does not have a valid
+   * {@code email}, Checkout will set the email entered during the session on the Customer.
    *
    * <p>If blank for Checkout Sessions in {@code payment} or {@code subscription} mode, Checkout
    * will create a new Customer object based on information provided during the payment flow.
@@ -63,6 +74,23 @@ public class SessionCreateParams extends ApiRequestParams {
    */
   @SerializedName("customer")
   String customer;
+
+  /**
+   * Configure whether a Checkout Session creates a <a
+   * href="https://stripe.com/docs/api/customers">Customer</a> during Session confirmation.
+   *
+   * <p>When a Customer is not created, you can still retrieve email, address, and other customer
+   * data entered in Checkout with <a
+   * href="https://stripe.com/docs/api/checkout/sessions/object#checkout_session_object-customer_details">customer_details</a>.
+   *
+   * <p>Sessions that do not create Customers will instead create <a
+   * href="https://support.stripe.com/questions/guest-customer-faq">Guest Customers</a> in the
+   * Dashboard.
+   *
+   * <p>Can only be set in {@code payment} and {@code setup} mode.
+   */
+  @SerializedName("customer_creation")
+  CustomerCreation customerCreation;
 
   /**
    * If provided, this value will be used when the Customer object is created. If not provided,
@@ -90,6 +118,13 @@ public class SessionCreateParams extends ApiRequestParams {
   /** Specifies which fields in the response should be expanded. */
   @SerializedName("expand")
   List<String> expand;
+
+  /**
+   * The Epoch time in seconds at which the Checkout Session will expire. It can be anywhere from 1
+   * to 24 hours after Checkout Session creation. By default, this value is 24 hours from creation.
+   */
+  @SerializedName("expires_at")
+  Long expiresAt;
 
   /**
    * Map of extra parameters for custom features not available in this client library. The content
@@ -162,6 +197,17 @@ public class SessionCreateParams extends ApiRequestParams {
   List<PaymentMethodType> paymentMethodTypes;
 
   /**
+   * Controls phone number collection settings for the session.
+   *
+   * <p>We recommend that you review your privacy policy and check with your legal contacts before
+   * using this feature. Learn more about <a
+   * href="https://stripe.com/docs/payments/checkout/phone-numbers">collecting phone numbers with
+   * Checkout</a>.
+   */
+  @SerializedName("phone_number_collection")
+  PhoneNumberCollection phoneNumberCollection;
+
+  /**
    * A subset of parameters to be passed to SetupIntent creation for Checkout Sessions in {@code
    * setup} mode.
    */
@@ -174,7 +220,11 @@ public class SessionCreateParams extends ApiRequestParams {
   @SerializedName("shipping_address_collection")
   ShippingAddressCollection shippingAddressCollection;
 
-  /** The shipping rate to apply to this Session. Currently, only up to one may be specified. */
+  /** The shipping rate options to apply to this Session. */
+  @SerializedName("shipping_options")
+  List<ShippingOption> shippingOptions;
+
+  /** [Deprecated] The shipping rate to apply to this Session. Only up to one may be specified. */
   @SerializedName("shipping_rates")
   List<String> shippingRates;
 
@@ -196,8 +246,9 @@ public class SessionCreateParams extends ApiRequestParams {
 
   /**
    * The URL to which Stripe should send customers when payment or setup is complete. If you’d like
-   * access to the Checkout Session for the successful payment, read more about it in the guide on
-   * <a href="https://stripe.com/docs/payments/checkout/fulfill-orders">fulfilling orders</a>.
+   * to use information from the successful Checkout Session on your page, read the guide on <a
+   * href="https://stripe.com/docs/payments/checkout/custom-success-page">customizing your success
+   * page</a>.
    */
   @SerializedName("success_url")
   String successUrl;
@@ -207,16 +258,20 @@ public class SessionCreateParams extends ApiRequestParams {
   TaxIdCollection taxIdCollection;
 
   private SessionCreateParams(
+      AfterExpiration afterExpiration,
       Boolean allowPromotionCodes,
       AutomaticTax automaticTax,
       BillingAddressCollection billingAddressCollection,
       String cancelUrl,
       String clientReferenceId,
+      ConsentCollection consentCollection,
       String customer,
+      CustomerCreation customerCreation,
       String customerEmail,
       CustomerUpdate customerUpdate,
       List<Discount> discounts,
       List<String> expand,
+      Long expiresAt,
       Map<String, Object> extraParams,
       List<LineItem> lineItems,
       Locale locale,
@@ -225,23 +280,29 @@ public class SessionCreateParams extends ApiRequestParams {
       PaymentIntentData paymentIntentData,
       PaymentMethodOptions paymentMethodOptions,
       List<PaymentMethodType> paymentMethodTypes,
+      PhoneNumberCollection phoneNumberCollection,
       SetupIntentData setupIntentData,
       ShippingAddressCollection shippingAddressCollection,
+      List<ShippingOption> shippingOptions,
       List<String> shippingRates,
       SubmitType submitType,
       SubscriptionData subscriptionData,
       String successUrl,
       TaxIdCollection taxIdCollection) {
+    this.afterExpiration = afterExpiration;
     this.allowPromotionCodes = allowPromotionCodes;
     this.automaticTax = automaticTax;
     this.billingAddressCollection = billingAddressCollection;
     this.cancelUrl = cancelUrl;
     this.clientReferenceId = clientReferenceId;
+    this.consentCollection = consentCollection;
     this.customer = customer;
+    this.customerCreation = customerCreation;
     this.customerEmail = customerEmail;
     this.customerUpdate = customerUpdate;
     this.discounts = discounts;
     this.expand = expand;
+    this.expiresAt = expiresAt;
     this.extraParams = extraParams;
     this.lineItems = lineItems;
     this.locale = locale;
@@ -250,8 +311,10 @@ public class SessionCreateParams extends ApiRequestParams {
     this.paymentIntentData = paymentIntentData;
     this.paymentMethodOptions = paymentMethodOptions;
     this.paymentMethodTypes = paymentMethodTypes;
+    this.phoneNumberCollection = phoneNumberCollection;
     this.setupIntentData = setupIntentData;
     this.shippingAddressCollection = shippingAddressCollection;
+    this.shippingOptions = shippingOptions;
     this.shippingRates = shippingRates;
     this.submitType = submitType;
     this.subscriptionData = subscriptionData;
@@ -264,6 +327,8 @@ public class SessionCreateParams extends ApiRequestParams {
   }
 
   public static class Builder {
+    private AfterExpiration afterExpiration;
+
     private Boolean allowPromotionCodes;
 
     private AutomaticTax automaticTax;
@@ -274,7 +339,11 @@ public class SessionCreateParams extends ApiRequestParams {
 
     private String clientReferenceId;
 
+    private ConsentCollection consentCollection;
+
     private String customer;
+
+    private CustomerCreation customerCreation;
 
     private String customerEmail;
 
@@ -283,6 +352,8 @@ public class SessionCreateParams extends ApiRequestParams {
     private List<Discount> discounts;
 
     private List<String> expand;
+
+    private Long expiresAt;
 
     private Map<String, Object> extraParams;
 
@@ -300,9 +371,13 @@ public class SessionCreateParams extends ApiRequestParams {
 
     private List<PaymentMethodType> paymentMethodTypes;
 
+    private PhoneNumberCollection phoneNumberCollection;
+
     private SetupIntentData setupIntentData;
 
     private ShippingAddressCollection shippingAddressCollection;
+
+    private List<ShippingOption> shippingOptions;
 
     private List<String> shippingRates;
 
@@ -317,16 +392,20 @@ public class SessionCreateParams extends ApiRequestParams {
     /** Finalize and obtain parameter instance from this builder. */
     public SessionCreateParams build() {
       return new SessionCreateParams(
+          this.afterExpiration,
           this.allowPromotionCodes,
           this.automaticTax,
           this.billingAddressCollection,
           this.cancelUrl,
           this.clientReferenceId,
+          this.consentCollection,
           this.customer,
+          this.customerCreation,
           this.customerEmail,
           this.customerUpdate,
           this.discounts,
           this.expand,
+          this.expiresAt,
           this.extraParams,
           this.lineItems,
           this.locale,
@@ -335,13 +414,21 @@ public class SessionCreateParams extends ApiRequestParams {
           this.paymentIntentData,
           this.paymentMethodOptions,
           this.paymentMethodTypes,
+          this.phoneNumberCollection,
           this.setupIntentData,
           this.shippingAddressCollection,
+          this.shippingOptions,
           this.shippingRates,
           this.submitType,
           this.subscriptionData,
           this.successUrl,
           this.taxIdCollection);
+    }
+
+    /** Configure actions after a Checkout Session has expired. */
+    public Builder setAfterExpiration(AfterExpiration afterExpiration) {
+      this.afterExpiration = afterExpiration;
+      return this;
     }
 
     /** Enables user redeemable promotion codes. */
@@ -383,17 +470,25 @@ public class SessionCreateParams extends ApiRequestParams {
       return this;
     }
 
+    /** Configure fields for the Checkout Session to gather active consent from customers. */
+    public Builder setConsentCollection(ConsentCollection consentCollection) {
+      this.consentCollection = consentCollection;
+      return this;
+    }
+
     /**
      * ID of an existing Customer, if one exists. In {@code payment} mode, the customer’s most
      * recent card payment method will be used to prefill the email, name, card details, and billing
      * address on the Checkout page. In {@code subscription} mode, the customer’s <a
      * href="https://stripe.com/docs/api/customers/update#update_customer-invoice_settings-default_payment_method">default
      * payment method</a> will be used if it’s a card, and otherwise the most recent card will be
-     * used. A valid billing address is required for Checkout to prefill the customer's card
-     * details.
+     * used. A valid billing address, billing name and billing email are required on the payment
+     * method for Checkout to prefill the customer's card details.
      *
-     * <p>If the customer changes their email on the Checkout page, the Customer object will be
-     * updated with the new email.
+     * <p>If the Customer already has a valid <a
+     * href="https://stripe.com/docs/api/customers/object#customer_object-email">email</a> set, the
+     * email will be prefilled and not editable in Checkout. If the Customer does not have a valid
+     * {@code email}, Checkout will set the email entered during the session on the Customer.
      *
      * <p>If blank for Checkout Sessions in {@code payment} or {@code subscription} mode, Checkout
      * will create a new Customer object based on information provided during the payment flow.
@@ -405,6 +500,25 @@ public class SessionCreateParams extends ApiRequestParams {
      */
     public Builder setCustomer(String customer) {
       this.customer = customer;
+      return this;
+    }
+
+    /**
+     * Configure whether a Checkout Session creates a <a
+     * href="https://stripe.com/docs/api/customers">Customer</a> during Session confirmation.
+     *
+     * <p>When a Customer is not created, you can still retrieve email, address, and other customer
+     * data entered in Checkout with <a
+     * href="https://stripe.com/docs/api/checkout/sessions/object#checkout_session_object-customer_details">customer_details</a>.
+     *
+     * <p>Sessions that do not create Customers will instead create <a
+     * href="https://support.stripe.com/questions/guest-customer-faq">Guest Customers</a> in the
+     * Dashboard.
+     *
+     * <p>Can only be set in {@code payment} and {@code setup} mode.
+     */
+    public Builder setCustomerCreation(CustomerCreation customerCreation) {
+      this.customerCreation = customerCreation;
       return this;
     }
 
@@ -477,6 +591,16 @@ public class SessionCreateParams extends ApiRequestParams {
         this.expand = new ArrayList<>();
       }
       this.expand.addAll(elements);
+      return this;
+    }
+
+    /**
+     * The Epoch time in seconds at which the Checkout Session will expire. It can be anywhere from
+     * 1 to 24 hours after Checkout Session creation. By default, this value is 24 hours from
+     * creation.
+     */
+    public Builder setExpiresAt(Long expiresAt) {
+      this.expiresAt = expiresAt;
       return this;
     }
 
@@ -618,6 +742,19 @@ public class SessionCreateParams extends ApiRequestParams {
     }
 
     /**
+     * Controls phone number collection settings for the session.
+     *
+     * <p>We recommend that you review your privacy policy and check with your legal contacts before
+     * using this feature. Learn more about <a
+     * href="https://stripe.com/docs/payments/checkout/phone-numbers">collecting phone numbers with
+     * Checkout</a>.
+     */
+    public Builder setPhoneNumberCollection(PhoneNumberCollection phoneNumberCollection) {
+      this.phoneNumberCollection = phoneNumberCollection;
+      return this;
+    }
+
+    /**
      * A subset of parameters to be passed to SetupIntent creation for Checkout Sessions in {@code
      * setup} mode.
      */
@@ -632,6 +769,32 @@ public class SessionCreateParams extends ApiRequestParams {
     public Builder setShippingAddressCollection(
         ShippingAddressCollection shippingAddressCollection) {
       this.shippingAddressCollection = shippingAddressCollection;
+      return this;
+    }
+
+    /**
+     * Add an element to `shippingOptions` list. A list is initialized for the first `add/addAll`
+     * call, and subsequent calls adds additional elements to the original list. See {@link
+     * SessionCreateParams#shippingOptions} for the field documentation.
+     */
+    public Builder addShippingOption(ShippingOption element) {
+      if (this.shippingOptions == null) {
+        this.shippingOptions = new ArrayList<>();
+      }
+      this.shippingOptions.add(element);
+      return this;
+    }
+
+    /**
+     * Add all elements to `shippingOptions` list. A list is initialized for the first `add/addAll`
+     * call, and subsequent calls adds additional elements to the original list. See {@link
+     * SessionCreateParams#shippingOptions} for the field documentation.
+     */
+    public Builder addAllShippingOption(List<ShippingOption> elements) {
+      if (this.shippingOptions == null) {
+        this.shippingOptions = new ArrayList<>();
+      }
+      this.shippingOptions.addAll(elements);
       return this;
     }
 
@@ -683,9 +846,9 @@ public class SessionCreateParams extends ApiRequestParams {
 
     /**
      * The URL to which Stripe should send customers when payment or setup is complete. If you’d
-     * like access to the Checkout Session for the successful payment, read more about it in the
-     * guide on <a href="https://stripe.com/docs/payments/checkout/fulfill-orders">fulfilling
-     * orders</a>.
+     * like to use information from the successful Checkout Session on your page, read the guide on
+     * <a href="https://stripe.com/docs/payments/checkout/custom-success-page">customizing your
+     * success page</a>.
      */
     public Builder setSuccessUrl(String successUrl) {
       this.successUrl = successUrl;
@@ -696,6 +859,172 @@ public class SessionCreateParams extends ApiRequestParams {
     public Builder setTaxIdCollection(TaxIdCollection taxIdCollection) {
       this.taxIdCollection = taxIdCollection;
       return this;
+    }
+  }
+
+  @Getter
+  public static class AfterExpiration {
+    /**
+     * Map of extra parameters for custom features not available in this client library. The content
+     * in this map is not serialized under this field's {@code @SerializedName} value. Instead, each
+     * key/value pair is serialized as if the key is a root-level field (serialized) name in this
+     * param object. Effectively, this map is flattened to its parent instance.
+     */
+    @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+    Map<String, Object> extraParams;
+
+    /** Configure a Checkout Session that can be used to recover an expired session. */
+    @SerializedName("recovery")
+    Recovery recovery;
+
+    private AfterExpiration(Map<String, Object> extraParams, Recovery recovery) {
+      this.extraParams = extraParams;
+      this.recovery = recovery;
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static class Builder {
+      private Map<String, Object> extraParams;
+
+      private Recovery recovery;
+
+      /** Finalize and obtain parameter instance from this builder. */
+      public AfterExpiration build() {
+        return new AfterExpiration(this.extraParams, this.recovery);
+      }
+
+      /**
+       * Add a key/value pair to `extraParams` map. A map is initialized for the first `put/putAll`
+       * call, and subsequent calls add additional key/value pairs to the original map. See {@link
+       * SessionCreateParams.AfterExpiration#extraParams} for the field documentation.
+       */
+      public Builder putExtraParam(String key, Object value) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.put(key, value);
+        return this;
+      }
+
+      /**
+       * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+       * `put/putAll` call, and subsequent calls add additional key/value pairs to the original map.
+       * See {@link SessionCreateParams.AfterExpiration#extraParams} for the field documentation.
+       */
+      public Builder putAllExtraParam(Map<String, Object> map) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.putAll(map);
+        return this;
+      }
+
+      /** Configure a Checkout Session that can be used to recover an expired session. */
+      public Builder setRecovery(Recovery recovery) {
+        this.recovery = recovery;
+        return this;
+      }
+    }
+
+    @Getter
+    public static class Recovery {
+      /**
+       * Enables user redeemable promotion codes on the recovered Checkout Sessions. Defaults to
+       * {@code false}
+       */
+      @SerializedName("allow_promotion_codes")
+      Boolean allowPromotionCodes;
+
+      /**
+       * If {@code true}, a recovery URL will be generated to recover this Checkout Session if it
+       * expires before a successful transaction is completed. It will be attached to the Checkout
+       * Session object upon expiration.
+       */
+      @SerializedName("enabled")
+      Boolean enabled;
+
+      /**
+       * Map of extra parameters for custom features not available in this client library. The
+       * content in this map is not serialized under this field's {@code @SerializedName} value.
+       * Instead, each key/value pair is serialized as if the key is a root-level field (serialized)
+       * name in this param object. Effectively, this map is flattened to its parent instance.
+       */
+      @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+      Map<String, Object> extraParams;
+
+      private Recovery(
+          Boolean allowPromotionCodes, Boolean enabled, Map<String, Object> extraParams) {
+        this.allowPromotionCodes = allowPromotionCodes;
+        this.enabled = enabled;
+        this.extraParams = extraParams;
+      }
+
+      public static Builder builder() {
+        return new Builder();
+      }
+
+      public static class Builder {
+        private Boolean allowPromotionCodes;
+
+        private Boolean enabled;
+
+        private Map<String, Object> extraParams;
+
+        /** Finalize and obtain parameter instance from this builder. */
+        public Recovery build() {
+          return new Recovery(this.allowPromotionCodes, this.enabled, this.extraParams);
+        }
+
+        /**
+         * Enables user redeemable promotion codes on the recovered Checkout Sessions. Defaults to
+         * {@code false}
+         */
+        public Builder setAllowPromotionCodes(Boolean allowPromotionCodes) {
+          this.allowPromotionCodes = allowPromotionCodes;
+          return this;
+        }
+
+        /**
+         * If {@code true}, a recovery URL will be generated to recover this Checkout Session if it
+         * expires before a successful transaction is completed. It will be attached to the Checkout
+         * Session object upon expiration.
+         */
+        public Builder setEnabled(Boolean enabled) {
+          this.enabled = enabled;
+          return this;
+        }
+
+        /**
+         * Add a key/value pair to `extraParams` map. A map is initialized for the first
+         * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+         * map. See {@link SessionCreateParams.AfterExpiration.Recovery#extraParams} for the field
+         * documentation.
+         */
+        public Builder putExtraParam(String key, Object value) {
+          if (this.extraParams == null) {
+            this.extraParams = new HashMap<>();
+          }
+          this.extraParams.put(key, value);
+          return this;
+        }
+
+        /**
+         * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+         * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+         * map. See {@link SessionCreateParams.AfterExpiration.Recovery#extraParams} for the field
+         * documentation.
+         */
+        public Builder putAllExtraParam(Map<String, Object> map) {
+          if (this.extraParams == null) {
+            this.extraParams = new HashMap<>();
+          }
+          this.extraParams.putAll(map);
+          return this;
+        }
+      }
     }
   }
 
@@ -763,6 +1092,96 @@ public class SessionCreateParams extends ApiRequestParams {
         }
         this.extraParams.putAll(map);
         return this;
+      }
+    }
+  }
+
+  @Getter
+  public static class ConsentCollection {
+    /**
+     * Map of extra parameters for custom features not available in this client library. The content
+     * in this map is not serialized under this field's {@code @SerializedName} value. Instead, each
+     * key/value pair is serialized as if the key is a root-level field (serialized) name in this
+     * param object. Effectively, this map is flattened to its parent instance.
+     */
+    @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+    Map<String, Object> extraParams;
+
+    /**
+     * If set to {@code auto}, enables the collection of customer consent for promotional
+     * communications. The Checkout Session will determine whether to display an option to opt into
+     * promotional communication from the merchant depending on the customer's locale. Only
+     * available to US merchants.
+     */
+    @SerializedName("promotions")
+    Promotions promotions;
+
+    private ConsentCollection(Map<String, Object> extraParams, Promotions promotions) {
+      this.extraParams = extraParams;
+      this.promotions = promotions;
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static class Builder {
+      private Map<String, Object> extraParams;
+
+      private Promotions promotions;
+
+      /** Finalize and obtain parameter instance from this builder. */
+      public ConsentCollection build() {
+        return new ConsentCollection(this.extraParams, this.promotions);
+      }
+
+      /**
+       * Add a key/value pair to `extraParams` map. A map is initialized for the first `put/putAll`
+       * call, and subsequent calls add additional key/value pairs to the original map. See {@link
+       * SessionCreateParams.ConsentCollection#extraParams} for the field documentation.
+       */
+      public Builder putExtraParam(String key, Object value) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.put(key, value);
+        return this;
+      }
+
+      /**
+       * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+       * `put/putAll` call, and subsequent calls add additional key/value pairs to the original map.
+       * See {@link SessionCreateParams.ConsentCollection#extraParams} for the field documentation.
+       */
+      public Builder putAllExtraParam(Map<String, Object> map) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.putAll(map);
+        return this;
+      }
+
+      /**
+       * If set to {@code auto}, enables the collection of customer consent for promotional
+       * communications. The Checkout Session will determine whether to display an option to opt
+       * into promotional communication from the merchant depending on the customer's locale. Only
+       * available to US merchants.
+       */
+      public Builder setPromotions(Promotions promotions) {
+        this.promotions = promotions;
+        return this;
+      }
+    }
+
+    public enum Promotions implements ApiRequestParams.EnumParam {
+      @SerializedName("auto")
+      AUTO("auto");
+
+      @Getter(onMethod_ = {@Override})
+      private final String value;
+
+      Promotions(String value) {
+        this.value = value;
       }
     }
   }
@@ -1020,26 +1439,22 @@ public class SessionCreateParams extends ApiRequestParams {
     AdjustableQuantity adjustableQuantity;
 
     /**
-     * The amount to be collected per unit of the line item. If specified, must also pass {@code
-     * currency} and {@code name}.
+     * [Deprecated] The amount to be collected per unit of the line item. If specified, must also
+     * pass {@code currency} and {@code name}.
      */
     @SerializedName("amount")
     Long amount;
 
     /**
-     * Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO currency
-     * code</a>, in lowercase. Must be a <a href="https://stripe.com/docs/currencies">supported
-     * currency</a>. Required if {@code amount} is passed.
+     * [Deprecated] Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO
+     * currency code</a>, in lowercase. Must be a <a
+     * href="https://stripe.com/docs/currencies">supported currency</a>. Required if {@code amount}
+     * is passed.
      */
     @SerializedName("currency")
     String currency;
 
-    /**
-     * The description for the line item, to be displayed on the Checkout page.
-     *
-     * <p>If using {@code price} or {@code price_data}, will default to the name of the associated
-     * product.
-     */
+    /** [Deprecated] The description for the line item, to be displayed on the Checkout page. */
     @SerializedName("description")
     String description;
 
@@ -1061,31 +1476,31 @@ public class SessionCreateParams extends ApiRequestParams {
     Map<String, Object> extraParams;
 
     /**
-     * A list of image URLs representing this line item. Each image can be up to 5 MB in size. If
-     * passing {@code price} or {@code price_data}, specify images on the associated product
-     * instead.
+     * [Deprecated] A list of image URLs representing this line item. Each image can be up to 5 MB
+     * in size. If passing {@code price} or {@code price_data}, specify images on the associated
+     * product instead.
      */
     @SerializedName("images")
     List<String> images;
 
     /**
-     * The name for the item to be displayed on the Checkout page. Required if {@code amount} is
-     * passed.
+     * [Deprecated] The name for the item to be displayed on the Checkout page. Required if {@code
+     * amount} is passed.
      */
     @SerializedName("name")
     String name;
 
     /**
      * The ID of the <a href="https://stripe.com/docs/api/prices">Price</a> or <a
-     * href="https://stripe.com/docs/api/plans">Plan</a> object. One of {@code price}, {@code
-     * price_data} or {@code amount} is required.
+     * href="https://stripe.com/docs/api/plans">Plan</a> object. One of {@code price} or {@code
+     * price_data} is required.
      */
     @SerializedName("price")
     String price;
 
     /**
      * Data used to generate a new <a href="https://stripe.com/docs/api/prices">Price</a> object
-     * inline. One of {@code price}, {@code price_data} or {@code amount} is required.
+     * inline. One of {@code price} or {@code price_data} is required.
      */
     @SerializedName("price_data")
     PriceData priceData;
@@ -1187,8 +1602,8 @@ public class SessionCreateParams extends ApiRequestParams {
       }
 
       /**
-       * The amount to be collected per unit of the line item. If specified, must also pass {@code
-       * currency} and {@code name}.
+       * [Deprecated] The amount to be collected per unit of the line item. If specified, must also
+       * pass {@code currency} and {@code name}.
        */
       public Builder setAmount(Long amount) {
         this.amount = amount;
@@ -1196,21 +1611,17 @@ public class SessionCreateParams extends ApiRequestParams {
       }
 
       /**
-       * Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO currency
-       * code</a>, in lowercase. Must be a <a href="https://stripe.com/docs/currencies">supported
-       * currency</a>. Required if {@code amount} is passed.
+       * [Deprecated] Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO
+       * currency code</a>, in lowercase. Must be a <a
+       * href="https://stripe.com/docs/currencies">supported currency</a>. Required if {@code
+       * amount} is passed.
        */
       public Builder setCurrency(String currency) {
         this.currency = currency;
         return this;
       }
 
-      /**
-       * The description for the line item, to be displayed on the Checkout page.
-       *
-       * <p>If using {@code price} or {@code price_data}, will default to the name of the associated
-       * product.
-       */
+      /** [Deprecated] The description for the line item, to be displayed on the Checkout page. */
       public Builder setDescription(String description) {
         this.description = description;
         return this;
@@ -1295,8 +1706,8 @@ public class SessionCreateParams extends ApiRequestParams {
       }
 
       /**
-       * The name for the item to be displayed on the Checkout page. Required if {@code amount} is
-       * passed.
+       * [Deprecated] The name for the item to be displayed on the Checkout page. Required if {@code
+       * amount} is passed.
        */
       public Builder setName(String name) {
         this.name = name;
@@ -1305,8 +1716,8 @@ public class SessionCreateParams extends ApiRequestParams {
 
       /**
        * The ID of the <a href="https://stripe.com/docs/api/prices">Price</a> or <a
-       * href="https://stripe.com/docs/api/plans">Plan</a> object. One of {@code price}, {@code
-       * price_data} or {@code amount} is required.
+       * href="https://stripe.com/docs/api/plans">Plan</a> object. One of {@code price} or {@code
+       * price_data} is required.
        */
       public Builder setPrice(String price) {
         this.price = price;
@@ -1315,7 +1726,7 @@ public class SessionCreateParams extends ApiRequestParams {
 
       /**
        * Data used to generate a new <a href="https://stripe.com/docs/api/prices">Price</a> object
-       * inline. One of {@code price}, {@code price_data} or {@code amount} is required.
+       * inline. One of {@code price} or {@code price_data} is required.
        */
       public Builder setPriceData(PriceData priceData) {
         this.priceData = priceData;
@@ -1378,7 +1789,7 @@ public class SessionCreateParams extends ApiRequestParams {
 
       /**
        * The maximum quantity the customer can purchase for the Checkout Session. By default this
-       * value is 99.
+       * value is 99. You can specify a value up to 999.
        */
       @SerializedName("maximum")
       Long maximum;
@@ -1455,7 +1866,7 @@ public class SessionCreateParams extends ApiRequestParams {
 
         /**
          * The maximum quantity the customer can purchase for the Checkout Session. By default this
-         * value is 99.
+         * value is 99. You can specify a value up to 999.
          */
         public Builder setMaximum(Long maximum) {
           this.maximum = maximum;
@@ -1506,7 +1917,9 @@ public class SessionCreateParams extends ApiRequestParams {
       @SerializedName("product_data")
       ProductData productData;
 
-      /** The recurring components of a price such as {@code interval} and {@code usage_type}. */
+      /**
+       * The recurring components of a price such as {@code interval} and {@code interval_count}.
+       */
       @SerializedName("recurring")
       Recurring recurring;
 
@@ -1641,7 +2054,9 @@ public class SessionCreateParams extends ApiRequestParams {
           return this;
         }
 
-        /** The recurring components of a price such as {@code interval} and {@code usage_type}. */
+        /**
+         * The recurring components of a price such as {@code interval} and {@code interval_count}.
+         */
         public Builder setRecurring(Recurring recurring) {
           this.recurring = recurring;
           return this;
@@ -2020,11 +2435,9 @@ public class SessionCreateParams extends ApiRequestParams {
     /**
      * The amount of the application fee (if any) that will be requested to be applied to the
      * payment and transferred to the application owner's Stripe account. The amount of the
-     * application fee collected will be capped at the total payment amount. To use an application
-     * fee, the request must be made on behalf of another account, using the {@code Stripe-Account}
-     * header or an OAuth key. For more information, see the PaymentIntents <a
-     * href="https://stripe.com/docs/payments/connected-accounts">use case for connected
-     * accounts</a>.
+     * application fee collected will be capped at the total payment amount. For more information,
+     * see the PaymentIntents <a href="https://stripe.com/docs/payments/connected-accounts">use case
+     * for connected accounts</a>.
      */
     @SerializedName("application_fee_amount")
     Long applicationFeeAmount;
@@ -2082,8 +2495,11 @@ public class SessionCreateParams extends ApiRequestParams {
      * <p>When setting this to {@code off_session}, Checkout will show a notice to the customer that
      * their payment details will be saved and used for future payments.
      *
-     * <p>For both values, Checkout will attach the payment method to either the provided Customer
-     * for the session, or a new Customer created by Checkout if one has not been provided.
+     * <p>If a Customer has been provided or Checkout creates a new Customer, Checkout will attach
+     * the payment method to the Customer.
+     *
+     * <p>If Checkout does not create a Customer, the payment method is not attached to a Customer.
+     * To reuse the payment method, you can retrieve it from the Checkout Session's PaymentIntent.
      *
      * <p>When processing card payments, Checkout also uses {@code setup_future_usage} to
      * dynamically optimize your payment flow and comply with regional legislation and network
@@ -2210,11 +2626,9 @@ public class SessionCreateParams extends ApiRequestParams {
       /**
        * The amount of the application fee (if any) that will be requested to be applied to the
        * payment and transferred to the application owner's Stripe account. The amount of the
-       * application fee collected will be capped at the total payment amount. To use an application
-       * fee, the request must be made on behalf of another account, using the {@code
-       * Stripe-Account} header or an OAuth key. For more information, see the PaymentIntents <a
-       * href="https://stripe.com/docs/payments/connected-accounts">use case for connected
-       * accounts</a>.
+       * application fee collected will be capped at the total payment amount. For more information,
+       * see the PaymentIntents <a href="https://stripe.com/docs/payments/connected-accounts">use
+       * case for connected accounts</a>.
        */
       public Builder setApplicationFeeAmount(Long applicationFeeAmount) {
         this.applicationFeeAmount = applicationFeeAmount;
@@ -2316,8 +2730,12 @@ public class SessionCreateParams extends ApiRequestParams {
        * <p>When setting this to {@code off_session}, Checkout will show a notice to the customer
        * that their payment details will be saved and used for future payments.
        *
-       * <p>For both values, Checkout will attach the payment method to either the provided Customer
-       * for the session, or a new Customer created by Checkout if one has not been provided.
+       * <p>If a Customer has been provided or Checkout creates a new Customer, Checkout will attach
+       * the payment method to the Customer.
+       *
+       * <p>If Checkout does not create a Customer, the payment method is not attached to a
+       * Customer. To reuse the payment method, you can retrieve it from the Checkout Session's
+       * PaymentIntent.
        *
        * <p>When processing card payments, Checkout also uses {@code setup_future_usage} to
        * dynamically optimize your payment flow and comply with regional legislation and network
@@ -2816,11 +3234,15 @@ public class SessionCreateParams extends ApiRequestParams {
     @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
     Map<String, Object> extraParams;
 
+    /** contains details about the Konbini payment method options. */
+    @SerializedName("konbini")
+    Konbini konbini;
+
     /** contains details about the OXXO payment method options. */
     @SerializedName("oxxo")
     Oxxo oxxo;
 
-    /** contains details about the Wechat Pay payment method options. */
+    /** contains details about the WeChat Pay payment method options. */
     @SerializedName("wechat_pay")
     WechatPay wechatPay;
 
@@ -2828,11 +3250,13 @@ public class SessionCreateParams extends ApiRequestParams {
         AcssDebit acssDebit,
         Boleto boleto,
         Map<String, Object> extraParams,
+        Konbini konbini,
         Oxxo oxxo,
         WechatPay wechatPay) {
       this.acssDebit = acssDebit;
       this.boleto = boleto;
       this.extraParams = extraParams;
+      this.konbini = konbini;
       this.oxxo = oxxo;
       this.wechatPay = wechatPay;
     }
@@ -2848,6 +3272,8 @@ public class SessionCreateParams extends ApiRequestParams {
 
       private Map<String, Object> extraParams;
 
+      private Konbini konbini;
+
       private Oxxo oxxo;
 
       private WechatPay wechatPay;
@@ -2855,7 +3281,7 @@ public class SessionCreateParams extends ApiRequestParams {
       /** Finalize and obtain parameter instance from this builder. */
       public PaymentMethodOptions build() {
         return new PaymentMethodOptions(
-            this.acssDebit, this.boleto, this.extraParams, this.oxxo, this.wechatPay);
+            this.acssDebit, this.boleto, this.extraParams, this.konbini, this.oxxo, this.wechatPay);
       }
 
       /** contains details about the ACSS Debit payment method options. */
@@ -2897,13 +3323,19 @@ public class SessionCreateParams extends ApiRequestParams {
         return this;
       }
 
+      /** contains details about the Konbini payment method options. */
+      public Builder setKonbini(Konbini konbini) {
+        this.konbini = konbini;
+        return this;
+      }
+
       /** contains details about the OXXO payment method options. */
       public Builder setOxxo(Oxxo oxxo) {
         this.oxxo = oxxo;
         return this;
       }
 
-      /** contains details about the Wechat Pay payment method options. */
+      /** contains details about the WeChat Pay payment method options. */
       public Builder setWechatPay(WechatPay wechatPay) {
         this.wechatPay = wechatPay;
         return this;
@@ -3030,6 +3462,13 @@ public class SessionCreateParams extends ApiRequestParams {
         Object customMandateUrl;
 
         /**
+         * List of Stripe products where this mandate can be selected automatically. Only usable in
+         * {@code setup} mode.
+         */
+        @SerializedName("default_for")
+        List<DefaultFor> defaultFor;
+
+        /**
          * Map of extra parameters for custom features not available in this client library. The
          * content in this map is not serialized under this field's {@code @SerializedName} value.
          * Instead, each key/value pair is serialized as if the key is a root-level field
@@ -3056,11 +3495,13 @@ public class SessionCreateParams extends ApiRequestParams {
 
         private MandateOptions(
             Object customMandateUrl,
+            List<DefaultFor> defaultFor,
             Map<String, Object> extraParams,
             String intervalDescription,
             PaymentSchedule paymentSchedule,
             TransactionType transactionType) {
           this.customMandateUrl = customMandateUrl;
+          this.defaultFor = defaultFor;
           this.extraParams = extraParams;
           this.intervalDescription = intervalDescription;
           this.paymentSchedule = paymentSchedule;
@@ -3074,6 +3515,8 @@ public class SessionCreateParams extends ApiRequestParams {
         public static class Builder {
           private Object customMandateUrl;
 
+          private List<DefaultFor> defaultFor;
+
           private Map<String, Object> extraParams;
 
           private String intervalDescription;
@@ -3086,6 +3529,7 @@ public class SessionCreateParams extends ApiRequestParams {
           public MandateOptions build() {
             return new MandateOptions(
                 this.customMandateUrl,
+                this.defaultFor,
                 this.extraParams,
                 this.intervalDescription,
                 this.paymentSchedule,
@@ -3111,6 +3555,34 @@ public class SessionCreateParams extends ApiRequestParams {
            */
           public Builder setCustomMandateUrl(EmptyParam customMandateUrl) {
             this.customMandateUrl = customMandateUrl;
+            return this;
+          }
+
+          /**
+           * Add an element to `defaultFor` list. A list is initialized for the first `add/addAll`
+           * call, and subsequent calls adds additional elements to the original list. See {@link
+           * SessionCreateParams.PaymentMethodOptions.AcssDebit.MandateOptions#defaultFor} for the
+           * field documentation.
+           */
+          public Builder addDefaultFor(DefaultFor element) {
+            if (this.defaultFor == null) {
+              this.defaultFor = new ArrayList<>();
+            }
+            this.defaultFor.add(element);
+            return this;
+          }
+
+          /**
+           * Add all elements to `defaultFor` list. A list is initialized for the first `add/addAll`
+           * call, and subsequent calls adds additional elements to the original list. See {@link
+           * SessionCreateParams.PaymentMethodOptions.AcssDebit.MandateOptions#defaultFor} for the
+           * field documentation.
+           */
+          public Builder addAllDefaultFor(List<DefaultFor> elements) {
+            if (this.defaultFor == null) {
+              this.defaultFor = new ArrayList<>();
+            }
+            this.defaultFor.addAll(elements);
             return this;
           }
 
@@ -3163,6 +3635,21 @@ public class SessionCreateParams extends ApiRequestParams {
           public Builder setTransactionType(TransactionType transactionType) {
             this.transactionType = transactionType;
             return this;
+          }
+        }
+
+        public enum DefaultFor implements ApiRequestParams.EnumParam {
+          @SerializedName("invoice")
+          INVOICE("invoice"),
+
+          @SerializedName("subscription")
+          SUBSCRIPTION("subscription");
+
+          @Getter(onMethod_ = {@Override})
+          private final String value;
+
+          DefaultFor(String value) {
+            this.value = value;
           }
         }
 
@@ -3300,6 +3787,97 @@ public class SessionCreateParams extends ApiRequestParams {
          * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
          * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
          * map. See {@link SessionCreateParams.PaymentMethodOptions.Boleto#extraParams} for the
+         * field documentation.
+         */
+        public Builder putAllExtraParam(Map<String, Object> map) {
+          if (this.extraParams == null) {
+            this.extraParams = new HashMap<>();
+          }
+          this.extraParams.putAll(map);
+          return this;
+        }
+      }
+    }
+
+    @Getter
+    public static class Konbini {
+      /**
+       * The number of calendar days (between 1 and 60) after which Konbini payment instructions
+       * will expire. For example, if a PaymentIntent is confirmed with Konbini and {@code
+       * expires_after_days} set to 2 on Monday JST, the instructions will expire on Wednesday
+       * 23:59:59 JST. Defaults to 3 days.
+       */
+      @SerializedName("expires_after_days")
+      Object expiresAfterDays;
+
+      /**
+       * Map of extra parameters for custom features not available in this client library. The
+       * content in this map is not serialized under this field's {@code @SerializedName} value.
+       * Instead, each key/value pair is serialized as if the key is a root-level field (serialized)
+       * name in this param object. Effectively, this map is flattened to its parent instance.
+       */
+      @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+      Map<String, Object> extraParams;
+
+      private Konbini(Object expiresAfterDays, Map<String, Object> extraParams) {
+        this.expiresAfterDays = expiresAfterDays;
+        this.extraParams = extraParams;
+      }
+
+      public static Builder builder() {
+        return new Builder();
+      }
+
+      public static class Builder {
+        private Object expiresAfterDays;
+
+        private Map<String, Object> extraParams;
+
+        /** Finalize and obtain parameter instance from this builder. */
+        public Konbini build() {
+          return new Konbini(this.expiresAfterDays, this.extraParams);
+        }
+
+        /**
+         * The number of calendar days (between 1 and 60) after which Konbini payment instructions
+         * will expire. For example, if a PaymentIntent is confirmed with Konbini and {@code
+         * expires_after_days} set to 2 on Monday JST, the instructions will expire on Wednesday
+         * 23:59:59 JST. Defaults to 3 days.
+         */
+        public Builder setExpiresAfterDays(Long expiresAfterDays) {
+          this.expiresAfterDays = expiresAfterDays;
+          return this;
+        }
+
+        /**
+         * The number of calendar days (between 1 and 60) after which Konbini payment instructions
+         * will expire. For example, if a PaymentIntent is confirmed with Konbini and {@code
+         * expires_after_days} set to 2 on Monday JST, the instructions will expire on Wednesday
+         * 23:59:59 JST. Defaults to 3 days.
+         */
+        public Builder setExpiresAfterDays(EmptyParam expiresAfterDays) {
+          this.expiresAfterDays = expiresAfterDays;
+          return this;
+        }
+
+        /**
+         * Add a key/value pair to `extraParams` map. A map is initialized for the first
+         * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+         * map. See {@link SessionCreateParams.PaymentMethodOptions.Konbini#extraParams} for the
+         * field documentation.
+         */
+        public Builder putExtraParam(String key, Object value) {
+          if (this.extraParams == null) {
+            this.extraParams = new HashMap<>();
+          }
+          this.extraParams.put(key, value);
+          return this;
+        }
+
+        /**
+         * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+         * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+         * map. See {@link SessionCreateParams.PaymentMethodOptions.Konbini#extraParams} for the
          * field documentation.
          */
         public Builder putAllExtraParam(Map<String, Object> map) {
@@ -3488,6 +4066,75 @@ public class SessionCreateParams extends ApiRequestParams {
         Client(String value) {
           this.value = value;
         }
+      }
+    }
+  }
+
+  @Getter
+  public static class PhoneNumberCollection {
+    /** Set to {@code true} to enable phone number collection. */
+    @SerializedName("enabled")
+    Boolean enabled;
+
+    /**
+     * Map of extra parameters for custom features not available in this client library. The content
+     * in this map is not serialized under this field's {@code @SerializedName} value. Instead, each
+     * key/value pair is serialized as if the key is a root-level field (serialized) name in this
+     * param object. Effectively, this map is flattened to its parent instance.
+     */
+    @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+    Map<String, Object> extraParams;
+
+    private PhoneNumberCollection(Boolean enabled, Map<String, Object> extraParams) {
+      this.enabled = enabled;
+      this.extraParams = extraParams;
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static class Builder {
+      private Boolean enabled;
+
+      private Map<String, Object> extraParams;
+
+      /** Finalize and obtain parameter instance from this builder. */
+      public PhoneNumberCollection build() {
+        return new PhoneNumberCollection(this.enabled, this.extraParams);
+      }
+
+      /** Set to {@code true} to enable phone number collection. */
+      public Builder setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+        return this;
+      }
+
+      /**
+       * Add a key/value pair to `extraParams` map. A map is initialized for the first `put/putAll`
+       * call, and subsequent calls add additional key/value pairs to the original map. See {@link
+       * SessionCreateParams.PhoneNumberCollection#extraParams} for the field documentation.
+       */
+      public Builder putExtraParam(String key, Object value) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.put(key, value);
+        return this;
+      }
+
+      /**
+       * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+       * `put/putAll` call, and subsequent calls add additional key/value pairs to the original map.
+       * See {@link SessionCreateParams.PhoneNumberCollection#extraParams} for the field
+       * documentation.
+       */
+      public Builder putAllExtraParam(Map<String, Object> map) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.putAll(map);
+        return this;
       }
     }
   }
@@ -4433,6 +5080,752 @@ public class SessionCreateParams extends ApiRequestParams {
   }
 
   @Getter
+  public static class ShippingOption {
+    /**
+     * Map of extra parameters for custom features not available in this client library. The content
+     * in this map is not serialized under this field's {@code @SerializedName} value. Instead, each
+     * key/value pair is serialized as if the key is a root-level field (serialized) name in this
+     * param object. Effectively, this map is flattened to its parent instance.
+     */
+    @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+    Map<String, Object> extraParams;
+
+    /** The ID of the Shipping Rate to use for this shipping option. */
+    @SerializedName("shipping_rate")
+    String shippingRate;
+
+    /** Parameters to be passed to Shipping Rate creation for this shipping option. */
+    @SerializedName("shipping_rate_data")
+    ShippingRateData shippingRateData;
+
+    private ShippingOption(
+        Map<String, Object> extraParams, String shippingRate, ShippingRateData shippingRateData) {
+      this.extraParams = extraParams;
+      this.shippingRate = shippingRate;
+      this.shippingRateData = shippingRateData;
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static class Builder {
+      private Map<String, Object> extraParams;
+
+      private String shippingRate;
+
+      private ShippingRateData shippingRateData;
+
+      /** Finalize and obtain parameter instance from this builder. */
+      public ShippingOption build() {
+        return new ShippingOption(this.extraParams, this.shippingRate, this.shippingRateData);
+      }
+
+      /**
+       * Add a key/value pair to `extraParams` map. A map is initialized for the first `put/putAll`
+       * call, and subsequent calls add additional key/value pairs to the original map. See {@link
+       * SessionCreateParams.ShippingOption#extraParams} for the field documentation.
+       */
+      public Builder putExtraParam(String key, Object value) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.put(key, value);
+        return this;
+      }
+
+      /**
+       * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+       * `put/putAll` call, and subsequent calls add additional key/value pairs to the original map.
+       * See {@link SessionCreateParams.ShippingOption#extraParams} for the field documentation.
+       */
+      public Builder putAllExtraParam(Map<String, Object> map) {
+        if (this.extraParams == null) {
+          this.extraParams = new HashMap<>();
+        }
+        this.extraParams.putAll(map);
+        return this;
+      }
+
+      /** The ID of the Shipping Rate to use for this shipping option. */
+      public Builder setShippingRate(String shippingRate) {
+        this.shippingRate = shippingRate;
+        return this;
+      }
+
+      /** Parameters to be passed to Shipping Rate creation for this shipping option. */
+      public Builder setShippingRateData(ShippingRateData shippingRateData) {
+        this.shippingRateData = shippingRateData;
+        return this;
+      }
+    }
+
+    @Getter
+    public static class ShippingRateData {
+      /**
+       * The estimated range for how long shipping will take, meant to be displayable to the
+       * customer. This will appear on CheckoutSessions.
+       */
+      @SerializedName("delivery_estimate")
+      DeliveryEstimate deliveryEstimate;
+
+      /**
+       * The name of the shipping rate, meant to be displayable to the customer. This will appear on
+       * CheckoutSessions.
+       */
+      @SerializedName("display_name")
+      String displayName;
+
+      /**
+       * Map of extra parameters for custom features not available in this client library. The
+       * content in this map is not serialized under this field's {@code @SerializedName} value.
+       * Instead, each key/value pair is serialized as if the key is a root-level field (serialized)
+       * name in this param object. Effectively, this map is flattened to its parent instance.
+       */
+      @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+      Map<String, Object> extraParams;
+
+      /**
+       * Describes a fixed amount to charge for shipping. Must be present if type is {@code
+       * fixed_amount}.
+       */
+      @SerializedName("fixed_amount")
+      FixedAmount fixedAmount;
+
+      /**
+       * Set of <a href="https://stripe.com/docs/api/metadata">key-value pairs</a> that you can
+       * attach to an object. This can be useful for storing additional information about the object
+       * in a structured format. Individual keys can be unset by posting an empty value to them. All
+       * keys can be unset by posting an empty value to {@code metadata}.
+       */
+      @SerializedName("metadata")
+      Map<String, String> metadata;
+
+      /**
+       * Specifies whether the rate is considered inclusive of taxes or exclusive of taxes. One of
+       * {@code inclusive}, {@code exclusive}, or {@code unspecified}.
+       */
+      @SerializedName("tax_behavior")
+      TaxBehavior taxBehavior;
+
+      /**
+       * A <a href="https://stripe.com/docs/tax/tax-codes">tax code</a> ID. The Shipping tax code is
+       * {@code txcd_92010001}.
+       */
+      @SerializedName("tax_code")
+      String taxCode;
+
+      /**
+       * The type of calculation to use on the shipping rate. Can only be {@code fixed_amount} for
+       * now.
+       */
+      @SerializedName("type")
+      Type type;
+
+      private ShippingRateData(
+          DeliveryEstimate deliveryEstimate,
+          String displayName,
+          Map<String, Object> extraParams,
+          FixedAmount fixedAmount,
+          Map<String, String> metadata,
+          TaxBehavior taxBehavior,
+          String taxCode,
+          Type type) {
+        this.deliveryEstimate = deliveryEstimate;
+        this.displayName = displayName;
+        this.extraParams = extraParams;
+        this.fixedAmount = fixedAmount;
+        this.metadata = metadata;
+        this.taxBehavior = taxBehavior;
+        this.taxCode = taxCode;
+        this.type = type;
+      }
+
+      public static Builder builder() {
+        return new Builder();
+      }
+
+      public static class Builder {
+        private DeliveryEstimate deliveryEstimate;
+
+        private String displayName;
+
+        private Map<String, Object> extraParams;
+
+        private FixedAmount fixedAmount;
+
+        private Map<String, String> metadata;
+
+        private TaxBehavior taxBehavior;
+
+        private String taxCode;
+
+        private Type type;
+
+        /** Finalize and obtain parameter instance from this builder. */
+        public ShippingRateData build() {
+          return new ShippingRateData(
+              this.deliveryEstimate,
+              this.displayName,
+              this.extraParams,
+              this.fixedAmount,
+              this.metadata,
+              this.taxBehavior,
+              this.taxCode,
+              this.type);
+        }
+
+        /**
+         * The estimated range for how long shipping will take, meant to be displayable to the
+         * customer. This will appear on CheckoutSessions.
+         */
+        public Builder setDeliveryEstimate(DeliveryEstimate deliveryEstimate) {
+          this.deliveryEstimate = deliveryEstimate;
+          return this;
+        }
+
+        /**
+         * The name of the shipping rate, meant to be displayable to the customer. This will appear
+         * on CheckoutSessions.
+         */
+        public Builder setDisplayName(String displayName) {
+          this.displayName = displayName;
+          return this;
+        }
+
+        /**
+         * Add a key/value pair to `extraParams` map. A map is initialized for the first
+         * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+         * map. See {@link SessionCreateParams.ShippingOption.ShippingRateData#extraParams} for the
+         * field documentation.
+         */
+        public Builder putExtraParam(String key, Object value) {
+          if (this.extraParams == null) {
+            this.extraParams = new HashMap<>();
+          }
+          this.extraParams.put(key, value);
+          return this;
+        }
+
+        /**
+         * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+         * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+         * map. See {@link SessionCreateParams.ShippingOption.ShippingRateData#extraParams} for the
+         * field documentation.
+         */
+        public Builder putAllExtraParam(Map<String, Object> map) {
+          if (this.extraParams == null) {
+            this.extraParams = new HashMap<>();
+          }
+          this.extraParams.putAll(map);
+          return this;
+        }
+
+        /**
+         * Describes a fixed amount to charge for shipping. Must be present if type is {@code
+         * fixed_amount}.
+         */
+        public Builder setFixedAmount(FixedAmount fixedAmount) {
+          this.fixedAmount = fixedAmount;
+          return this;
+        }
+
+        /**
+         * Add a key/value pair to `metadata` map. A map is initialized for the first `put/putAll`
+         * call, and subsequent calls add additional key/value pairs to the original map. See {@link
+         * SessionCreateParams.ShippingOption.ShippingRateData#metadata} for the field
+         * documentation.
+         */
+        public Builder putMetadata(String key, String value) {
+          if (this.metadata == null) {
+            this.metadata = new HashMap<>();
+          }
+          this.metadata.put(key, value);
+          return this;
+        }
+
+        /**
+         * Add all map key/value pairs to `metadata` map. A map is initialized for the first
+         * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+         * map. See {@link SessionCreateParams.ShippingOption.ShippingRateData#metadata} for the
+         * field documentation.
+         */
+        public Builder putAllMetadata(Map<String, String> map) {
+          if (this.metadata == null) {
+            this.metadata = new HashMap<>();
+          }
+          this.metadata.putAll(map);
+          return this;
+        }
+
+        /**
+         * Specifies whether the rate is considered inclusive of taxes or exclusive of taxes. One of
+         * {@code inclusive}, {@code exclusive}, or {@code unspecified}.
+         */
+        public Builder setTaxBehavior(TaxBehavior taxBehavior) {
+          this.taxBehavior = taxBehavior;
+          return this;
+        }
+
+        /**
+         * A <a href="https://stripe.com/docs/tax/tax-codes">tax code</a> ID. The Shipping tax code
+         * is {@code txcd_92010001}.
+         */
+        public Builder setTaxCode(String taxCode) {
+          this.taxCode = taxCode;
+          return this;
+        }
+
+        /**
+         * The type of calculation to use on the shipping rate. Can only be {@code fixed_amount} for
+         * now.
+         */
+        public Builder setType(Type type) {
+          this.type = type;
+          return this;
+        }
+      }
+
+      @Getter
+      public static class DeliveryEstimate {
+        /**
+         * Map of extra parameters for custom features not available in this client library. The
+         * content in this map is not serialized under this field's {@code @SerializedName} value.
+         * Instead, each key/value pair is serialized as if the key is a root-level field
+         * (serialized) name in this param object. Effectively, this map is flattened to its parent
+         * instance.
+         */
+        @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+        Map<String, Object> extraParams;
+
+        /**
+         * The upper bound of the estimated range. If empty, represents no upper bound i.e.,
+         * infinite.
+         */
+        @SerializedName("maximum")
+        Maximum maximum;
+
+        /** The lower bound of the estimated range. If empty, represents no lower bound. */
+        @SerializedName("minimum")
+        Minimum minimum;
+
+        private DeliveryEstimate(
+            Map<String, Object> extraParams, Maximum maximum, Minimum minimum) {
+          this.extraParams = extraParams;
+          this.maximum = maximum;
+          this.minimum = minimum;
+        }
+
+        public static Builder builder() {
+          return new Builder();
+        }
+
+        public static class Builder {
+          private Map<String, Object> extraParams;
+
+          private Maximum maximum;
+
+          private Minimum minimum;
+
+          /** Finalize and obtain parameter instance from this builder. */
+          public DeliveryEstimate build() {
+            return new DeliveryEstimate(this.extraParams, this.maximum, this.minimum);
+          }
+
+          /**
+           * Add a key/value pair to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SessionCreateParams.ShippingOption.ShippingRateData.DeliveryEstimate#extraParams} for
+           * the field documentation.
+           */
+          public Builder putExtraParam(String key, Object value) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.put(key, value);
+            return this;
+          }
+
+          /**
+           * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SessionCreateParams.ShippingOption.ShippingRateData.DeliveryEstimate#extraParams} for
+           * the field documentation.
+           */
+          public Builder putAllExtraParam(Map<String, Object> map) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.putAll(map);
+            return this;
+          }
+
+          /**
+           * The upper bound of the estimated range. If empty, represents no upper bound i.e.,
+           * infinite.
+           */
+          public Builder setMaximum(Maximum maximum) {
+            this.maximum = maximum;
+            return this;
+          }
+
+          /** The lower bound of the estimated range. If empty, represents no lower bound. */
+          public Builder setMinimum(Minimum minimum) {
+            this.minimum = minimum;
+            return this;
+          }
+        }
+
+        @Getter
+        public static class Maximum {
+          /**
+           * Map of extra parameters for custom features not available in this client library. The
+           * content in this map is not serialized under this field's {@code @SerializedName} value.
+           * Instead, each key/value pair is serialized as if the key is a root-level field
+           * (serialized) name in this param object. Effectively, this map is flattened to its
+           * parent instance.
+           */
+          @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+          Map<String, Object> extraParams;
+
+          /** A unit of time. */
+          @SerializedName("unit")
+          Unit unit;
+
+          /** Must be greater than 0. */
+          @SerializedName("value")
+          Long value;
+
+          private Maximum(Map<String, Object> extraParams, Unit unit, Long value) {
+            this.extraParams = extraParams;
+            this.unit = unit;
+            this.value = value;
+          }
+
+          public static Builder builder() {
+            return new Builder();
+          }
+
+          public static class Builder {
+            private Map<String, Object> extraParams;
+
+            private Unit unit;
+
+            private Long value;
+
+            /** Finalize and obtain parameter instance from this builder. */
+            public Maximum build() {
+              return new Maximum(this.extraParams, this.unit, this.value);
+            }
+
+            /**
+             * Add a key/value pair to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SessionCreateParams.ShippingOption.ShippingRateData.DeliveryEstimate.Maximum#extraParams}
+             * for the field documentation.
+             */
+            public Builder putExtraParam(String key, Object value) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.put(key, value);
+              return this;
+            }
+
+            /**
+             * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SessionCreateParams.ShippingOption.ShippingRateData.DeliveryEstimate.Maximum#extraParams}
+             * for the field documentation.
+             */
+            public Builder putAllExtraParam(Map<String, Object> map) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.putAll(map);
+              return this;
+            }
+
+            /** A unit of time. */
+            public Builder setUnit(Unit unit) {
+              this.unit = unit;
+              return this;
+            }
+
+            /** Must be greater than 0. */
+            public Builder setValue(Long value) {
+              this.value = value;
+              return this;
+            }
+          }
+
+          public enum Unit implements ApiRequestParams.EnumParam {
+            @SerializedName("business_day")
+            BUSINESS_DAY("business_day"),
+
+            @SerializedName("day")
+            DAY("day"),
+
+            @SerializedName("hour")
+            HOUR("hour"),
+
+            @SerializedName("month")
+            MONTH("month"),
+
+            @SerializedName("week")
+            WEEK("week");
+
+            @Getter(onMethod_ = {@Override})
+            private final String value;
+
+            Unit(String value) {
+              this.value = value;
+            }
+          }
+        }
+
+        @Getter
+        public static class Minimum {
+          /**
+           * Map of extra parameters for custom features not available in this client library. The
+           * content in this map is not serialized under this field's {@code @SerializedName} value.
+           * Instead, each key/value pair is serialized as if the key is a root-level field
+           * (serialized) name in this param object. Effectively, this map is flattened to its
+           * parent instance.
+           */
+          @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+          Map<String, Object> extraParams;
+
+          /** A unit of time. */
+          @SerializedName("unit")
+          Unit unit;
+
+          /** Must be greater than 0. */
+          @SerializedName("value")
+          Long value;
+
+          private Minimum(Map<String, Object> extraParams, Unit unit, Long value) {
+            this.extraParams = extraParams;
+            this.unit = unit;
+            this.value = value;
+          }
+
+          public static Builder builder() {
+            return new Builder();
+          }
+
+          public static class Builder {
+            private Map<String, Object> extraParams;
+
+            private Unit unit;
+
+            private Long value;
+
+            /** Finalize and obtain parameter instance from this builder. */
+            public Minimum build() {
+              return new Minimum(this.extraParams, this.unit, this.value);
+            }
+
+            /**
+             * Add a key/value pair to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SessionCreateParams.ShippingOption.ShippingRateData.DeliveryEstimate.Minimum#extraParams}
+             * for the field documentation.
+             */
+            public Builder putExtraParam(String key, Object value) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.put(key, value);
+              return this;
+            }
+
+            /**
+             * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SessionCreateParams.ShippingOption.ShippingRateData.DeliveryEstimate.Minimum#extraParams}
+             * for the field documentation.
+             */
+            public Builder putAllExtraParam(Map<String, Object> map) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.putAll(map);
+              return this;
+            }
+
+            /** A unit of time. */
+            public Builder setUnit(Unit unit) {
+              this.unit = unit;
+              return this;
+            }
+
+            /** Must be greater than 0. */
+            public Builder setValue(Long value) {
+              this.value = value;
+              return this;
+            }
+          }
+
+          public enum Unit implements ApiRequestParams.EnumParam {
+            @SerializedName("business_day")
+            BUSINESS_DAY("business_day"),
+
+            @SerializedName("day")
+            DAY("day"),
+
+            @SerializedName("hour")
+            HOUR("hour"),
+
+            @SerializedName("month")
+            MONTH("month"),
+
+            @SerializedName("week")
+            WEEK("week");
+
+            @Getter(onMethod_ = {@Override})
+            private final String value;
+
+            Unit(String value) {
+              this.value = value;
+            }
+          }
+        }
+      }
+
+      @Getter
+      public static class FixedAmount {
+        /** A non-negative integer in cents representing how much to charge. */
+        @SerializedName("amount")
+        Long amount;
+
+        /**
+         * Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO currency
+         * code</a>, in lowercase. Must be a <a href="https://stripe.com/docs/currencies">supported
+         * currency</a>.
+         */
+        @SerializedName("currency")
+        String currency;
+
+        /**
+         * Map of extra parameters for custom features not available in this client library. The
+         * content in this map is not serialized under this field's {@code @SerializedName} value.
+         * Instead, each key/value pair is serialized as if the key is a root-level field
+         * (serialized) name in this param object. Effectively, this map is flattened to its parent
+         * instance.
+         */
+        @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+        Map<String, Object> extraParams;
+
+        private FixedAmount(Long amount, String currency, Map<String, Object> extraParams) {
+          this.amount = amount;
+          this.currency = currency;
+          this.extraParams = extraParams;
+        }
+
+        public static Builder builder() {
+          return new Builder();
+        }
+
+        public static class Builder {
+          private Long amount;
+
+          private String currency;
+
+          private Map<String, Object> extraParams;
+
+          /** Finalize and obtain parameter instance from this builder. */
+          public FixedAmount build() {
+            return new FixedAmount(this.amount, this.currency, this.extraParams);
+          }
+
+          /** A non-negative integer in cents representing how much to charge. */
+          public Builder setAmount(Long amount) {
+            this.amount = amount;
+            return this;
+          }
+
+          /**
+           * Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO currency
+           * code</a>, in lowercase. Must be a <a
+           * href="https://stripe.com/docs/currencies">supported currency</a>.
+           */
+          public Builder setCurrency(String currency) {
+            this.currency = currency;
+            return this;
+          }
+
+          /**
+           * Add a key/value pair to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SessionCreateParams.ShippingOption.ShippingRateData.FixedAmount#extraParams} for the
+           * field documentation.
+           */
+          public Builder putExtraParam(String key, Object value) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.put(key, value);
+            return this;
+          }
+
+          /**
+           * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SessionCreateParams.ShippingOption.ShippingRateData.FixedAmount#extraParams} for the
+           * field documentation.
+           */
+          public Builder putAllExtraParam(Map<String, Object> map) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.putAll(map);
+            return this;
+          }
+        }
+      }
+
+      public enum TaxBehavior implements ApiRequestParams.EnumParam {
+        @SerializedName("exclusive")
+        EXCLUSIVE("exclusive"),
+
+        @SerializedName("inclusive")
+        INCLUSIVE("inclusive"),
+
+        @SerializedName("unspecified")
+        UNSPECIFIED("unspecified");
+
+        @Getter(onMethod_ = {@Override})
+        private final String value;
+
+        TaxBehavior(String value) {
+          this.value = value;
+        }
+      }
+
+      public enum Type implements ApiRequestParams.EnumParam {
+        @SerializedName("fixed_amount")
+        FIXED_AMOUNT("fixed_amount");
+
+        @Getter(onMethod_ = {@Override})
+        private final String value;
+
+        Type(String value) {
+          this.value = value;
+        }
+      }
+    }
+  }
+
+  @Getter
   public static class SubscriptionData {
     /**
      * A non-negative decimal between 0 and 100, with at most two decimal places. This represents
@@ -5044,6 +6437,21 @@ public class SessionCreateParams extends ApiRequestParams {
     }
   }
 
+  public enum CustomerCreation implements ApiRequestParams.EnumParam {
+    @SerializedName("always")
+    ALWAYS("always"),
+
+    @SerializedName("if_required")
+    IF_REQUIRED("if_required");
+
+    @Getter(onMethod_ = {@Override})
+    private final String value;
+
+    CustomerCreation(String value) {
+      this.value = value;
+    }
+  }
+
   public enum Locale implements ApiRequestParams.EnumParam {
     @SerializedName("auto")
     AUTO("auto"),
@@ -5204,6 +6612,9 @@ public class SessionCreateParams extends ApiRequestParams {
     @SerializedName("alipay")
     ALIPAY("alipay"),
 
+    @SerializedName("au_becs_debit")
+    AU_BECS_DEBIT("au_becs_debit"),
+
     @SerializedName("bacs_debit")
     BACS_DEBIT("bacs_debit"),
 
@@ -5230,6 +6641,12 @@ public class SessionCreateParams extends ApiRequestParams {
 
     @SerializedName("ideal")
     IDEAL("ideal"),
+
+    @SerializedName("klarna")
+    KLARNA("klarna"),
+
+    @SerializedName("konbini")
+    KONBINI("konbini"),
 
     @SerializedName("oxxo")
     OXXO("oxxo"),

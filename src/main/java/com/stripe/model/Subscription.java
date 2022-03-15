@@ -4,6 +4,7 @@ package com.stripe.model;
 import com.google.gson.annotations.SerializedName;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.testhelpers.TestClock;
 import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.SubscriptionCancelParams;
@@ -281,6 +282,12 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
   @SerializedName("status")
   String status;
 
+  /** ID of the test clock this subscription belongs to. */
+  @SerializedName("test_clock")
+  @Getter(lombok.AccessLevel.NONE)
+  @Setter(lombok.AccessLevel.NONE)
+  ExpandableField<TestClock> testClock;
+
   /**
    * The account (if any) the subscription's payments will be attributed to for tax reporting, and
    * where funds from each payment will be transferred to for each of the subscription's invoices.
@@ -408,6 +415,24 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
         new ExpandableField<SubscriptionSchedule>(expandableObject.getId(), expandableObject);
   }
 
+  /** Get ID of expandable {@code testClock} object. */
+  public String getTestClock() {
+    return (this.testClock != null) ? this.testClock.getId() : null;
+  }
+
+  public void setTestClock(String id) {
+    this.testClock = ApiResource.setExpandableFieldId(id, this.testClock);
+  }
+
+  /** Get expanded {@code testClock}. */
+  public TestClock getTestClockObject() {
+    return (this.testClock != null) ? this.testClock.getExpanded() : null;
+  }
+
+  public void setTestClockObject(TestClock expandableObject) {
+    this.testClock = new ExpandableField<TestClock>(expandableObject.getId(), expandableObject);
+  }
+
   /**
    * By default, returns a list of subscriptions that have not been canceled. In order to list
    * canceled subscriptions, specify <code>status=canceled</code>.
@@ -447,6 +472,16 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
   /**
    * Creates a new subscription on an existing customer. Each customer can have up to 500 active or
    * scheduled subscriptions.
+   *
+   * <p>When you create a subscription with <code>collection_method=charge_automatically</code>, the
+   * first invoice is finalized as part of the request. The <code>payment_behavior</code> parameter
+   * determines the exact behavior of the initial payment.
+   *
+   * <p>To start subscriptions where the first invoice always begins in a <code>draft</code> status,
+   * use <a
+   * href="https://stripe.com/docs/billing/subscriptions/subscription-schedules#managing">subscription
+   * schedules</a> instead. Schedules provide the flexibility to model more complex billing
+   * configurations that change over time.
    */
   public static Subscription create(Map<String, Object> params) throws StripeException {
     return create(params, (RequestOptions) null);
@@ -455,6 +490,16 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
   /**
    * Creates a new subscription on an existing customer. Each customer can have up to 500 active or
    * scheduled subscriptions.
+   *
+   * <p>When you create a subscription with <code>collection_method=charge_automatically</code>, the
+   * first invoice is finalized as part of the request. The <code>payment_behavior</code> parameter
+   * determines the exact behavior of the initial payment.
+   *
+   * <p>To start subscriptions where the first invoice always begins in a <code>draft</code> status,
+   * use <a
+   * href="https://stripe.com/docs/billing/subscriptions/subscription-schedules#managing">subscription
+   * schedules</a> instead. Schedules provide the flexibility to model more complex billing
+   * configurations that change over time.
    */
   public static Subscription create(Map<String, Object> params, RequestOptions options)
       throws StripeException {
@@ -466,6 +511,16 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
   /**
    * Creates a new subscription on an existing customer. Each customer can have up to 500 active or
    * scheduled subscriptions.
+   *
+   * <p>When you create a subscription with <code>collection_method=charge_automatically</code>, the
+   * first invoice is finalized as part of the request. The <code>payment_behavior</code> parameter
+   * determines the exact behavior of the initial payment.
+   *
+   * <p>To start subscriptions where the first invoice always begins in a <code>draft</code> status,
+   * use <a
+   * href="https://stripe.com/docs/billing/subscriptions/subscription-schedules#managing">subscription
+   * schedules</a> instead. Schedules provide the flexibility to model more complex billing
+   * configurations that change over time.
    */
   public static Subscription create(SubscriptionCreateParams params) throws StripeException {
     return create(params, (RequestOptions) null);
@@ -474,6 +529,16 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
   /**
    * Creates a new subscription on an existing customer. Each customer can have up to 500 active or
    * scheduled subscriptions.
+   *
+   * <p>When you create a subscription with <code>collection_method=charge_automatically</code>, the
+   * first invoice is finalized as part of the request. The <code>payment_behavior</code> parameter
+   * determines the exact behavior of the initial payment.
+   *
+   * <p>To start subscriptions where the first invoice always begins in a <code>draft</code> status,
+   * use <a
+   * href="https://stripe.com/docs/billing/subscriptions/subscription-schedules#managing">subscription
+   * schedules</a> instead. Schedules provide the flexibility to model more complex billing
+   * configurations that change over time.
    */
   public static Subscription create(SubscriptionCreateParams params, RequestOptions options)
       throws StripeException {
@@ -764,6 +829,13 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
   @EqualsAndHashCode(callSuper = false)
   public static class PaymentMethodOptions extends StripeObject {
     /**
+     * This sub-hash contains details about the Canadian pre-authorized debit payment method options
+     * to pass to invoices created by the subscription.
+     */
+    @SerializedName("acss_debit")
+    AcssDebit acssDebit;
+
+    /**
      * This sub-hash contains details about the Bancontact payment method options to pass to
      * invoices created by the subscription.
      */
@@ -776,6 +848,42 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
      */
     @SerializedName("card")
     Card card;
+
+    /**
+     * This sub-hash contains details about the Konbini payment method options to pass to invoices
+     * created by the subscription.
+     */
+    @SerializedName("konbini")
+    Konbini konbini;
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class AcssDebit extends StripeObject {
+      @SerializedName("mandate_options")
+      MandateOptions mandateOptions;
+
+      /**
+       * Bank account verification method.
+       *
+       * <p>One of {@code automatic}, {@code instant}, or {@code microdeposits}.
+       */
+      @SerializedName("verification_method")
+      String verificationMethod;
+
+      @Getter
+      @Setter
+      @EqualsAndHashCode(callSuper = false)
+      public static class MandateOptions extends StripeObject {
+        /**
+         * Transaction type of the mandate.
+         *
+         * <p>One of {@code business}, or {@code personal}.
+         */
+        @SerializedName("transaction_type")
+        String transactionType;
+      }
+    }
 
     @Getter
     @Setter
@@ -794,6 +902,9 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
     @Setter
     @EqualsAndHashCode(callSuper = false)
     public static class Card extends StripeObject {
+      @SerializedName("mandate_options")
+      MandateOptions mandateOptions;
+
       /**
        * We strongly recommend that you rely on our SCA Engine to automatically prompt your
        * customers for authentication based on risk level and <a
@@ -808,7 +919,36 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
        */
       @SerializedName("request_three_d_secure")
       String requestThreeDSecure;
+
+      @Getter
+      @Setter
+      @EqualsAndHashCode(callSuper = false)
+      public static class MandateOptions extends StripeObject {
+        /** Amount to be charged for future payments. */
+        @SerializedName("amount")
+        Long amount;
+
+        /**
+         * One of {@code fixed} or {@code maximum}. If {@code fixed}, the {@code amount} param
+         * refers to the exact amount to be charged in future payments. If {@code maximum}, the
+         * amount charged can be up to the value passed for the {@code amount} param.
+         */
+        @SerializedName("amount_type")
+        String amountType;
+
+        /**
+         * A description of the mandate or subscription that is meant to be displayed to the
+         * customer.
+         */
+        @SerializedName("description")
+        String description;
+      }
     }
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class Konbini extends StripeObject {}
   }
 
   @Getter
@@ -887,7 +1027,9 @@ public class Subscription extends ApiResource implements HasId, MetadataStore<Su
     /**
      * Indicates if a plan's {@code trial_period_days} should be applied to the subscription.
      * Setting {@code trial_end} per subscription is preferred, and this defaults to {@code false}.
-     * Setting this flag to {@code true} together with {@code trial_end} is not allowed.
+     * Setting this flag to {@code true} together with {@code trial_end} is not allowed. See <a
+     * href="https://stripe.com/docs/billing/subscriptions/trials">Using trial periods on
+     * subscriptions</a> to learn more.
      */
     @SerializedName("trial_from_plan")
     Boolean trialFromPlan;

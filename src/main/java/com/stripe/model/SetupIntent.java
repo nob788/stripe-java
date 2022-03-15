@@ -12,6 +12,7 @@ import com.stripe.param.SetupIntentCreateParams;
 import com.stripe.param.SetupIntentListParams;
 import com.stripe.param.SetupIntentRetrieveParams;
 import com.stripe.param.SetupIntentUpdateParams;
+import com.stripe.param.SetupIntentVerifyMicrodepositsParams;
 import java.util.List;
 import java.util.Map;
 import lombok.EqualsAndHashCode;
@@ -666,6 +667,55 @@ public class SetupIntent extends ApiResource implements HasId, MetadataStore<Set
         ApiResource.RequestMethod.POST, url, params, SetupIntent.class, options);
   }
 
+  /** Verifies microdeposits on a SetupIntent object. */
+  public SetupIntent verifyMicrodeposits() throws StripeException {
+    return verifyMicrodeposits((Map<String, Object>) null, (RequestOptions) null);
+  }
+
+  /** Verifies microdeposits on a SetupIntent object. */
+  public SetupIntent verifyMicrodeposits(RequestOptions options) throws StripeException {
+    return verifyMicrodeposits((Map<String, Object>) null, options);
+  }
+
+  /** Verifies microdeposits on a SetupIntent object. */
+  public SetupIntent verifyMicrodeposits(Map<String, Object> params) throws StripeException {
+    return verifyMicrodeposits(params, (RequestOptions) null);
+  }
+
+  /** Verifies microdeposits on a SetupIntent object. */
+  public SetupIntent verifyMicrodeposits(Map<String, Object> params, RequestOptions options)
+      throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/setup_intents/%s/verify_microdeposits",
+                ApiResource.urlEncodeId(this.getId())));
+    return ApiResource.request(
+        ApiResource.RequestMethod.POST, url, params, SetupIntent.class, options);
+  }
+
+  /** Verifies microdeposits on a SetupIntent object. */
+  public SetupIntent verifyMicrodeposits(SetupIntentVerifyMicrodepositsParams params)
+      throws StripeException {
+    return verifyMicrodeposits(params, (RequestOptions) null);
+  }
+
+  /** Verifies microdeposits on a SetupIntent object. */
+  public SetupIntent verifyMicrodeposits(
+      SetupIntentVerifyMicrodepositsParams params, RequestOptions options) throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/setup_intents/%s/verify_microdeposits",
+                ApiResource.urlEncodeId(this.getId())));
+    return ApiResource.request(
+        ApiResource.RequestMethod.POST, url, params, SetupIntent.class, options);
+  }
+
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
@@ -675,7 +725,8 @@ public class SetupIntent extends ApiResource implements HasId, MetadataStore<Set
 
     /**
      * Type of the next action to perform, one of {@code redirect_to_url}, {@code use_stripe_sdk},
-     * {@code alipay_handle_redirect}, or {@code oxxo_display_details}.
+     * {@code alipay_handle_redirect}, {@code oxxo_display_details}, or {@code
+     * verify_with_microdeposits}.
      */
     @SerializedName("type")
     String type;
@@ -768,6 +819,10 @@ public class SetupIntent extends ApiResource implements HasId, MetadataStore<Set
         @SerializedName("custom_mandate_url")
         String customMandateUrl;
 
+        /** List of Stripe products where this mandate can be selected automatically. */
+        @SerializedName("default_for")
+        List<String> defaultFor;
+
         /**
          * Description of the interval. Only required if the 'payment_schedule' parameter is
          * 'interval' or 'combined'.
@@ -797,6 +852,10 @@ public class SetupIntent extends ApiResource implements HasId, MetadataStore<Set
     @Setter
     @EqualsAndHashCode(callSuper = false)
     public static class Card extends StripeObject {
+      /** Configuration options for setting up an eMandate for cards issued in India. */
+      @SerializedName("mandate_options")
+      MandateOptions mandateOptions;
+
       /**
        * We strongly recommend that you rely on our SCA Engine to automatically prompt your
        * customers for authentication based on risk level and <a
@@ -812,6 +871,76 @@ public class SetupIntent extends ApiResource implements HasId, MetadataStore<Set
        */
       @SerializedName("request_three_d_secure")
       String requestThreeDSecure;
+
+      @Getter
+      @Setter
+      @EqualsAndHashCode(callSuper = false)
+      public static class MandateOptions extends StripeObject {
+        /** Amount to be charged for future payments. */
+        @SerializedName("amount")
+        Long amount;
+
+        /**
+         * One of {@code fixed} or {@code maximum}. If {@code fixed}, the {@code amount} param
+         * refers to the exact amount to be charged in future payments. If {@code maximum}, the
+         * amount charged can be up to the value passed for the {@code amount} param.
+         */
+        @SerializedName("amount_type")
+        String amountType;
+
+        /**
+         * Three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO currency
+         * code</a>, in lowercase. Must be a <a href="https://stripe.com/docs/currencies">supported
+         * currency</a>.
+         */
+        @SerializedName("currency")
+        String currency;
+
+        /**
+         * A description of the mandate or subscription that is meant to be displayed to the
+         * customer.
+         */
+        @SerializedName("description")
+        String description;
+
+        /**
+         * End date of the mandate or subscription. If not provided, the mandate will be active
+         * until canceled. If provided, end date should be after start date.
+         */
+        @SerializedName("end_date")
+        Long endDate;
+
+        /**
+         * Specifies payment frequency. One of {@code day}, {@code week}, {@code month}, {@code
+         * year}, or {@code sporadic}.
+         */
+        @SerializedName("interval")
+        String interval;
+
+        /**
+         * The number of intervals between payments. For example, {@code interval=month} and {@code
+         * interval_count=3} indicates one payment every three months. Maximum of one year interval
+         * allowed (1 year, 12 months, or 52 weeks). This parameter is optional when {@code
+         * interval=sporadic}.
+         */
+        @SerializedName("interval_count")
+        Long intervalCount;
+
+        /** Unique identifier for the mandate or subscription. */
+        @SerializedName("reference")
+        String reference;
+
+        /**
+         * Start date of the mandate or subscription. Start date should not be lesser than
+         * yesterday.
+         */
+        @SerializedName("start_date")
+        Long startDate;
+
+        /** Specifies the type of mandates supported. Possible values are {@code india}. */
+        @SerializedName("supported_types")
+        List<String> supportedTypes;
+      }
     }
 
     @Getter

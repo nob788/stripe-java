@@ -314,7 +314,11 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
   @SerializedName("statement_descriptor_suffix")
   String statementDescriptorSuffix;
 
-  /** The status of the payment is either {@code succeeded}, {@code pending}, or {@code failed}. */
+  /**
+   * The status of the payment is either {@code succeeded}, {@code pending}, or {@code failed}.
+   *
+   * <p>One of {@code failed}, {@code pending}, or {@code succeeded}.
+   */
   @SerializedName("status")
   String status;
 
@@ -755,7 +759,8 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
    * payment flow, where first you <a href="https://stripe.com/docs/api#create_charge">created a
    * charge</a> with the capture option set to false.
    *
-   * <p>Uncaptured payments expire exactly seven days after they are created. If they are not
+   * <p>Uncaptured payments expire a set number of days after they are created (<a
+   * href="https://stripe.com/docs/charges/placing-a-hold">7 by default</a>). If they are not
    * captured by that point in time, they will be marked as refunded and will no longer be
    * capturable.
    */
@@ -768,7 +773,8 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
    * payment flow, where first you <a href="https://stripe.com/docs/api#create_charge">created a
    * charge</a> with the capture option set to false.
    *
-   * <p>Uncaptured payments expire exactly seven days after they are created. If they are not
+   * <p>Uncaptured payments expire a set number of days after they are created (<a
+   * href="https://stripe.com/docs/charges/placing-a-hold">7 by default</a>). If they are not
    * captured by that point in time, they will be marked as refunded and will no longer be
    * capturable.
    */
@@ -781,7 +787,8 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
    * payment flow, where first you <a href="https://stripe.com/docs/api#create_charge">created a
    * charge</a> with the capture option set to false.
    *
-   * <p>Uncaptured payments expire exactly seven days after they are created. If they are not
+   * <p>Uncaptured payments expire a set number of days after they are created (<a
+   * href="https://stripe.com/docs/charges/placing-a-hold">7 by default</a>). If they are not
    * captured by that point in time, they will be marked as refunded and will no longer be
    * capturable.
    */
@@ -794,7 +801,8 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
    * payment flow, where first you <a href="https://stripe.com/docs/api#create_charge">created a
    * charge</a> with the capture option set to false.
    *
-   * <p>Uncaptured payments expire exactly seven days after they are created. If they are not
+   * <p>Uncaptured payments expire a set number of days after they are created (<a
+   * href="https://stripe.com/docs/charges/placing-a-hold">7 by default</a>). If they are not
    * captured by that point in time, they will be marked as refunded and will no longer be
    * capturable.
    */
@@ -812,7 +820,8 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
    * payment flow, where first you <a href="https://stripe.com/docs/api#create_charge">created a
    * charge</a> with the capture option set to false.
    *
-   * <p>Uncaptured payments expire exactly seven days after they are created. If they are not
+   * <p>Uncaptured payments expire a set number of days after they are created (<a
+   * href="https://stripe.com/docs/charges/placing-a-hold">7 by default</a>). If they are not
    * captured by that point in time, they will be marked as refunded and will no longer be
    * capturable.
    */
@@ -825,7 +834,8 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
    * payment flow, where first you <a href="https://stripe.com/docs/api#create_charge">created a
    * charge</a> with the capture option set to false.
    *
-   * <p>Uncaptured payments expire exactly seven days after they are created. If they are not
+   * <p>Uncaptured payments expire a set number of days after they are created (<a
+   * href="https://stripe.com/docs/charges/placing-a-hold">7 by default</a>). If they are not
    * captured by that point in time, they will be marked as refunded and will no longer be
    * capturable.
    */
@@ -1056,6 +1066,9 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
     @SerializedName("klarna")
     Klarna klarna;
 
+    @SerializedName("konbini")
+    Konbini konbini;
+
     @SerializedName("multibanco")
     Multibanco multibanco;
 
@@ -1198,6 +1211,13 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
     @Setter
     @EqualsAndHashCode(callSuper = false)
     public static class Alipay extends StripeObject {
+      /**
+       * Uniquely identifies this particular Alipay account. You can use this attribute to check
+       * whether two Alipay accounts are the same.
+       */
+      @SerializedName("buyer_id")
+      String buyerId;
+
       /**
        * Uniquely identifies this particular Alipay account. You can use this attribute to check
        * whether two Alipay accounts are the same.
@@ -1352,7 +1372,10 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
     @Setter
     @EqualsAndHashCode(callSuper = false)
     public static class Boleto extends StripeObject {
-      /** Uniquely identifies this customer tax_id (CNPJ or CPF). */
+      /**
+       * The tax ID of the customer (CPF for individuals consumers or CNPJ for businesses
+       * consumers).
+       */
       @SerializedName("tax_id")
       String taxId;
     }
@@ -1439,6 +1462,10 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
       /** The last four digits of the card. */
       @SerializedName("last4")
       String last4;
+
+      /** ID of the mandate used to make this payment or created by it. */
+      @SerializedName("mandate")
+      String mandate;
 
       /** True if this payment was marked as MOTO and out of scope for SCA. */
       @SerializedName("moto")
@@ -1667,6 +1694,10 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
     @Setter
     @EqualsAndHashCode(callSuper = false)
     public static class CardPresent extends StripeObject {
+      /** The authorized amount. */
+      @SerializedName("amount_authorized")
+      Long amountAuthorized;
+
       /**
        * Card brand. Can be {@code amex}, {@code diners}, {@code discover}, {@code jcb}, {@code
        * mastercard}, {@code unionpay}, {@code visa}, or {@code unknown}.
@@ -1677,7 +1708,10 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
       /**
        * The cardholder name as read from the card, in <a
        * href="https://en.wikipedia.org/wiki/ISO/IEC_7813">ISO 7813</a> format. May include
-       * alphanumeric characters, special characters and first/last name separator ({@code /}).
+       * alphanumeric characters, special characters and first/last name separator ({@code /}). In
+       * some cases, the cardholder name may not be available depending on how the issuer has
+       * configured the card. Cardholder name is typically not available on swipe or contactless
+       * payments, such as those made with Apple Pay and Google Pay.
        */
       @SerializedName("cardholder_name")
       String cardholderName;
@@ -1760,6 +1794,10 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
        */
       @SerializedName("network")
       String network;
+
+      /** Defines whether the authorized amount can be over-captured or not. */
+      @SerializedName("overcapture_supported")
+      Boolean overcaptureSupported;
 
       /**
        * How card details were read in this transaction.
@@ -1863,11 +1901,12 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
       String accountHolderType;
 
       /**
-       * The customer's bank. Can be one of {@code affin_bank}, {@code alliance_bank}, {@code
-       * ambank}, {@code bank_islam}, {@code bank_muamalat}, {@code bank_rakyat}, {@code bsn},
-       * {@code cimb}, {@code hong_leong_bank}, {@code hsbc}, {@code kfh}, {@code maybank2u}, {@code
-       * ocbc}, {@code public_bank}, {@code rhb}, {@code standard_chartered}, {@code uob}, {@code
-       * deutsche_bank}, {@code maybank2e}, or {@code pb_enterprise}.
+       * The customer's bank. Can be one of {@code affin_bank}, {@code agrobank}, {@code
+       * alliance_bank}, {@code ambank}, {@code bank_islam}, {@code bank_muamalat}, {@code
+       * bank_rakyat}, {@code bsn}, {@code cimb}, {@code hong_leong_bank}, {@code hsbc}, {@code
+       * kfh}, {@code maybank2u}, {@code ocbc}, {@code public_bank}, {@code rhb}, {@code
+       * standard_chartered}, {@code uob}, {@code deutsche_bank}, {@code maybank2e}, or {@code
+       * pb_enterprise}.
        */
       @SerializedName("bank")
       String bank;
@@ -2012,7 +2051,10 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
       /**
        * The cardholder name as read from the card, in <a
        * href="https://en.wikipedia.org/wiki/ISO/IEC_7813">ISO 7813</a> format. May include
-       * alphanumeric characters, special characters and first/last name separator ({@code /}).
+       * alphanumeric characters, special characters and first/last name separator ({@code /}). In
+       * some cases, the cardholder name may not be available depending on how the issuer has
+       * configured the card. Cardholder name is typically not available on swipe or contactless
+       * payments, such as those made with Apple Pay and Google Pay.
        */
       @SerializedName("cardholder_name")
       String cardholderName;
@@ -2167,7 +2209,37 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
     @Getter
     @Setter
     @EqualsAndHashCode(callSuper = false)
-    public static class Klarna extends StripeObject {}
+    public static class Klarna extends StripeObject {
+      /**
+       * The Klarna payment method used for this transaction. Can be one of {@code pay_later},
+       * {@code pay_now}, {@code pay_with_financing}, or {@code pay_in_installments}
+       */
+      @SerializedName("payment_method_category")
+      String paymentMethodCategory;
+
+      /**
+       * Preferred language of the Klarna authorization page that the customer is redirected to. Can
+       * be one of {@code de-AT}, {@code en-AT}, {@code nl-BE}, {@code fr-BE}, {@code en-BE}, {@code
+       * de-DE}, {@code en-DE}, {@code da-DK}, {@code en-DK}, {@code es-ES}, {@code en-ES}, {@code
+       * fi-FI}, {@code sv-FI}, {@code en-FI}, {@code en-GB}, {@code en-IE}, {@code it-IT}, {@code
+       * en-IT}, {@code nl-NL}, {@code en-NL}, {@code nb-NO}, {@code en-NO}, {@code sv-SE}, {@code
+       * en-SE}, {@code en-US}, {@code es-US}, {@code fr-FR}, or {@code en-FR}
+       */
+      @SerializedName("preferred_locale")
+      String preferredLocale;
+    }
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class Konbini extends StripeObject {
+      /**
+       * If the payment succeeded, this contains the details of the convenience store where the
+       * payment was completed.
+       */
+      @SerializedName("store")
+      Store store;
+    }
 
     @Getter
     @Setter
@@ -2362,6 +2434,19 @@ public class Charge extends ApiResource implements MetadataStore<Charge>, Balanc
         this.generatedSepaDebitMandate =
             new ExpandableField<Mandate>(expandableObject.getId(), expandableObject);
       }
+    }
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class Store extends StripeObject {
+      /**
+       * The name of the convenience store chain where the payment was completed.
+       *
+       * <p>One of {@code familymart}, {@code lawson}, {@code ministop}, or {@code seicomart}.
+       */
+      @SerializedName("chain")
+      String chain;
     }
 
     @Getter

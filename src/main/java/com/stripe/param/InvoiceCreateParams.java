@@ -145,6 +145,18 @@ public class InvoiceCreateParams extends ApiRequestParams {
   PaymentSettings paymentSettings;
 
   /**
+   * How to handle pending invoice items on invoice creation. One of {@code include}, {@code
+   * exclude}, or {@code include_and_require}. {@code include} will include any pending invoice
+   * items, and will create an empty draft invoice if no pending invoice items exist. {@code
+   * include_and_require} will include any pending invoice items, if no pending invoice items exist
+   * then the request will fail. {@code exclude} will always create an empty invoice draft
+   * regardless if there are pending invoice items or not. Defaults to {@code include_and_require}
+   * if the parameter is omitted.
+   */
+  @SerializedName("pending_invoice_items_behavior")
+  PendingInvoiceItemsBehavior pendingInvoiceItemsBehavior;
+
+  /**
    * Extra information about a charge for the customer's credit card statement. It must contain at
    * least one letter. If not specified and this invoice is part of a subscription, the default
    * {@code statement_descriptor} will be set to the first subscription item's product's {@code
@@ -191,6 +203,7 @@ public class InvoiceCreateParams extends ApiRequestParams {
       Object metadata,
       String onBehalfOf,
       PaymentSettings paymentSettings,
+      PendingInvoiceItemsBehavior pendingInvoiceItemsBehavior,
       String statementDescriptor,
       String subscription,
       TransferData transferData) {
@@ -214,6 +227,7 @@ public class InvoiceCreateParams extends ApiRequestParams {
     this.metadata = metadata;
     this.onBehalfOf = onBehalfOf;
     this.paymentSettings = paymentSettings;
+    this.pendingInvoiceItemsBehavior = pendingInvoiceItemsBehavior;
     this.statementDescriptor = statementDescriptor;
     this.subscription = subscription;
     this.transferData = transferData;
@@ -264,6 +278,8 @@ public class InvoiceCreateParams extends ApiRequestParams {
 
     private PaymentSettings paymentSettings;
 
+    private PendingInvoiceItemsBehavior pendingInvoiceItemsBehavior;
+
     private String statementDescriptor;
 
     private String subscription;
@@ -293,6 +309,7 @@ public class InvoiceCreateParams extends ApiRequestParams {
           this.metadata,
           this.onBehalfOf,
           this.paymentSettings,
+          this.pendingInvoiceItemsBehavior,
           this.statementDescriptor,
           this.subscription,
           this.transferData);
@@ -670,6 +687,21 @@ public class InvoiceCreateParams extends ApiRequestParams {
      */
     public Builder setPaymentSettings(PaymentSettings paymentSettings) {
       this.paymentSettings = paymentSettings;
+      return this;
+    }
+
+    /**
+     * How to handle pending invoice items on invoice creation. One of {@code include}, {@code
+     * exclude}, or {@code include_and_require}. {@code include} will include any pending invoice
+     * items, and will create an empty draft invoice if no pending invoice items exist. {@code
+     * include_and_require} will include any pending invoice items, if no pending invoice items
+     * exist then the request will fail. {@code exclude} will always create an empty invoice draft
+     * regardless if there are pending invoice items or not. Defaults to {@code include_and_require}
+     * if the parameter is omitted.
+     */
+    public Builder setPendingInvoiceItemsBehavior(
+        PendingInvoiceItemsBehavior pendingInvoiceItemsBehavior) {
+      this.pendingInvoiceItemsBehavior = pendingInvoiceItemsBehavior;
       return this;
     }
 
@@ -1079,6 +1111,13 @@ public class InvoiceCreateParams extends ApiRequestParams {
     @Getter
     public static class PaymentMethodOptions {
       /**
+       * If paying by {@code acss_debit}, this sub-hash contains details about the Canadian
+       * pre-authorized debit payment method options to pass to the invoice’s PaymentIntent.
+       */
+      @SerializedName("acss_debit")
+      Object acssDebit;
+
+      /**
        * If paying by {@code bancontact}, this sub-hash contains details about the Bancontact
        * payment method options to pass to the invoice’s PaymentIntent.
        */
@@ -1101,11 +1140,24 @@ public class InvoiceCreateParams extends ApiRequestParams {
       @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
       Map<String, Object> extraParams;
 
+      /**
+       * If paying by {@code konbini}, this sub-hash contains details about the Konbini payment
+       * method options to pass to the invoice’s PaymentIntent.
+       */
+      @SerializedName("konbini")
+      Object konbini;
+
       private PaymentMethodOptions(
-          Object bancontact, Object card, Map<String, Object> extraParams) {
+          Object acssDebit,
+          Object bancontact,
+          Object card,
+          Map<String, Object> extraParams,
+          Object konbini) {
+        this.acssDebit = acssDebit;
         this.bancontact = bancontact;
         this.card = card;
         this.extraParams = extraParams;
+        this.konbini = konbini;
       }
 
       public static Builder builder() {
@@ -1113,15 +1165,38 @@ public class InvoiceCreateParams extends ApiRequestParams {
       }
 
       public static class Builder {
+        private Object acssDebit;
+
         private Object bancontact;
 
         private Object card;
 
         private Map<String, Object> extraParams;
 
+        private Object konbini;
+
         /** Finalize and obtain parameter instance from this builder. */
         public PaymentMethodOptions build() {
-          return new PaymentMethodOptions(this.bancontact, this.card, this.extraParams);
+          return new PaymentMethodOptions(
+              this.acssDebit, this.bancontact, this.card, this.extraParams, this.konbini);
+        }
+
+        /**
+         * If paying by {@code acss_debit}, this sub-hash contains details about the Canadian
+         * pre-authorized debit payment method options to pass to the invoice’s PaymentIntent.
+         */
+        public Builder setAcssDebit(AcssDebit acssDebit) {
+          this.acssDebit = acssDebit;
+          return this;
+        }
+
+        /**
+         * If paying by {@code acss_debit}, this sub-hash contains details about the Canadian
+         * pre-authorized debit payment method options to pass to the invoice’s PaymentIntent.
+         */
+        public Builder setAcssDebit(EmptyParam acssDebit) {
+          this.acssDebit = acssDebit;
+          return this;
         }
 
         /**
@@ -1186,6 +1261,219 @@ public class InvoiceCreateParams extends ApiRequestParams {
           }
           this.extraParams.putAll(map);
           return this;
+        }
+
+        /**
+         * If paying by {@code konbini}, this sub-hash contains details about the Konbini payment
+         * method options to pass to the invoice’s PaymentIntent.
+         */
+        public Builder setKonbini(Konbini konbini) {
+          this.konbini = konbini;
+          return this;
+        }
+
+        /**
+         * If paying by {@code konbini}, this sub-hash contains details about the Konbini payment
+         * method options to pass to the invoice’s PaymentIntent.
+         */
+        public Builder setKonbini(EmptyParam konbini) {
+          this.konbini = konbini;
+          return this;
+        }
+      }
+
+      @Getter
+      public static class AcssDebit {
+        /**
+         * Map of extra parameters for custom features not available in this client library. The
+         * content in this map is not serialized under this field's {@code @SerializedName} value.
+         * Instead, each key/value pair is serialized as if the key is a root-level field
+         * (serialized) name in this param object. Effectively, this map is flattened to its parent
+         * instance.
+         */
+        @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+        Map<String, Object> extraParams;
+
+        /** Additional fields for Mandate creation. */
+        @SerializedName("mandate_options")
+        MandateOptions mandateOptions;
+
+        /** Verification method for the intent. */
+        @SerializedName("verification_method")
+        VerificationMethod verificationMethod;
+
+        private AcssDebit(
+            Map<String, Object> extraParams,
+            MandateOptions mandateOptions,
+            VerificationMethod verificationMethod) {
+          this.extraParams = extraParams;
+          this.mandateOptions = mandateOptions;
+          this.verificationMethod = verificationMethod;
+        }
+
+        public static Builder builder() {
+          return new Builder();
+        }
+
+        public static class Builder {
+          private Map<String, Object> extraParams;
+
+          private MandateOptions mandateOptions;
+
+          private VerificationMethod verificationMethod;
+
+          /** Finalize and obtain parameter instance from this builder. */
+          public AcssDebit build() {
+            return new AcssDebit(this.extraParams, this.mandateOptions, this.verificationMethod);
+          }
+
+          /**
+           * Add a key/value pair to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * InvoiceCreateParams.PaymentSettings.PaymentMethodOptions.AcssDebit#extraParams} for the
+           * field documentation.
+           */
+          public Builder putExtraParam(String key, Object value) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.put(key, value);
+            return this;
+          }
+
+          /**
+           * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * InvoiceCreateParams.PaymentSettings.PaymentMethodOptions.AcssDebit#extraParams} for the
+           * field documentation.
+           */
+          public Builder putAllExtraParam(Map<String, Object> map) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.putAll(map);
+            return this;
+          }
+
+          /** Additional fields for Mandate creation. */
+          public Builder setMandateOptions(MandateOptions mandateOptions) {
+            this.mandateOptions = mandateOptions;
+            return this;
+          }
+
+          /** Verification method for the intent. */
+          public Builder setVerificationMethod(VerificationMethod verificationMethod) {
+            this.verificationMethod = verificationMethod;
+            return this;
+          }
+        }
+
+        @Getter
+        public static class MandateOptions {
+          /**
+           * Map of extra parameters for custom features not available in this client library. The
+           * content in this map is not serialized under this field's {@code @SerializedName} value.
+           * Instead, each key/value pair is serialized as if the key is a root-level field
+           * (serialized) name in this param object. Effectively, this map is flattened to its
+           * parent instance.
+           */
+          @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+          Map<String, Object> extraParams;
+
+          /** Transaction type of the mandate. */
+          @SerializedName("transaction_type")
+          TransactionType transactionType;
+
+          private MandateOptions(Map<String, Object> extraParams, TransactionType transactionType) {
+            this.extraParams = extraParams;
+            this.transactionType = transactionType;
+          }
+
+          public static Builder builder() {
+            return new Builder();
+          }
+
+          public static class Builder {
+            private Map<String, Object> extraParams;
+
+            private TransactionType transactionType;
+
+            /** Finalize and obtain parameter instance from this builder. */
+            public MandateOptions build() {
+              return new MandateOptions(this.extraParams, this.transactionType);
+            }
+
+            /**
+             * Add a key/value pair to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * InvoiceCreateParams.PaymentSettings.PaymentMethodOptions.AcssDebit.MandateOptions#extraParams}
+             * for the field documentation.
+             */
+            public Builder putExtraParam(String key, Object value) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.put(key, value);
+              return this;
+            }
+
+            /**
+             * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * InvoiceCreateParams.PaymentSettings.PaymentMethodOptions.AcssDebit.MandateOptions#extraParams}
+             * for the field documentation.
+             */
+            public Builder putAllExtraParam(Map<String, Object> map) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.putAll(map);
+              return this;
+            }
+
+            /** Transaction type of the mandate. */
+            public Builder setTransactionType(TransactionType transactionType) {
+              this.transactionType = transactionType;
+              return this;
+            }
+          }
+
+          public enum TransactionType implements ApiRequestParams.EnumParam {
+            @SerializedName("business")
+            BUSINESS("business"),
+
+            @SerializedName("personal")
+            PERSONAL("personal");
+
+            @Getter(onMethod_ = {@Override})
+            private final String value;
+
+            TransactionType(String value) {
+              this.value = value;
+            }
+          }
+        }
+
+        public enum VerificationMethod implements ApiRequestParams.EnumParam {
+          @SerializedName("automatic")
+          AUTOMATIC("automatic"),
+
+          @SerializedName("instant")
+          INSTANT("instant"),
+
+          @SerializedName("microdeposits")
+          MICRODEPOSITS("microdeposits");
+
+          @Getter(onMethod_ = {@Override})
+          private final String value;
+
+          VerificationMethod(String value) {
+            this.value = value;
+          }
         }
       }
 
@@ -1394,6 +1682,66 @@ public class InvoiceCreateParams extends ApiRequestParams {
           }
         }
       }
+
+      @Getter
+      public static class Konbini {
+        /**
+         * Map of extra parameters for custom features not available in this client library. The
+         * content in this map is not serialized under this field's {@code @SerializedName} value.
+         * Instead, each key/value pair is serialized as if the key is a root-level field
+         * (serialized) name in this param object. Effectively, this map is flattened to its parent
+         * instance.
+         */
+        @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+        Map<String, Object> extraParams;
+
+        private Konbini(Map<String, Object> extraParams) {
+          this.extraParams = extraParams;
+        }
+
+        public static Builder builder() {
+          return new Builder();
+        }
+
+        public static class Builder {
+          private Map<String, Object> extraParams;
+
+          /** Finalize and obtain parameter instance from this builder. */
+          public Konbini build() {
+            return new Konbini(this.extraParams);
+          }
+
+          /**
+           * Add a key/value pair to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * InvoiceCreateParams.PaymentSettings.PaymentMethodOptions.Konbini#extraParams} for the
+           * field documentation.
+           */
+          public Builder putExtraParam(String key, Object value) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.put(key, value);
+            return this;
+          }
+
+          /**
+           * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * InvoiceCreateParams.PaymentSettings.PaymentMethodOptions.Konbini#extraParams} for the
+           * field documentation.
+           */
+          public Builder putAllExtraParam(Map<String, Object> map) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.putAll(map);
+            return this;
+          }
+        }
+      }
     }
 
     public enum PaymentMethodType implements ApiRequestParams.EnumParam {
@@ -1402,6 +1750,9 @@ public class InvoiceCreateParams extends ApiRequestParams {
 
       @SerializedName("ach_debit")
       ACH_DEBIT("ach_debit"),
+
+      @SerializedName("acss_debit")
+      ACSS_DEBIT("acss_debit"),
 
       @SerializedName("au_becs_debit")
       AU_BECS_DEBIT("au_becs_debit"),
@@ -1424,8 +1775,14 @@ public class InvoiceCreateParams extends ApiRequestParams {
       @SerializedName("giropay")
       GIROPAY("giropay"),
 
+      @SerializedName("grabpay")
+      GRABPAY("grabpay"),
+
       @SerializedName("ideal")
       IDEAL("ideal"),
+
+      @SerializedName("konbini")
+      KONBINI("konbini"),
 
       @SerializedName("sepa_credit_transfer")
       SEPA_CREDIT_TRANSFER("sepa_credit_transfer"),
@@ -1546,6 +1903,24 @@ public class InvoiceCreateParams extends ApiRequestParams {
     private final String value;
 
     CollectionMethod(String value) {
+      this.value = value;
+    }
+  }
+
+  public enum PendingInvoiceItemsBehavior implements ApiRequestParams.EnumParam {
+    @SerializedName("exclude")
+    EXCLUDE("exclude"),
+
+    @SerializedName("include")
+    INCLUDE("include"),
+
+    @SerializedName("include_and_require")
+    INCLUDE_AND_REQUIRE("include_and_require");
+
+    @Getter(onMethod_ = {@Override})
+    private final String value;
+
+    PendingInvoiceItemsBehavior(String value) {
       this.value = value;
     }
   }

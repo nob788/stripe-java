@@ -4,6 +4,7 @@ package com.stripe.model;
 import com.google.gson.annotations.SerializedName;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.testhelpers.TestClock;
 import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.InvoiceCreateParams;
@@ -145,10 +146,6 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
   @SerializedName("currency")
   String currency;
 
-  /** Custom fields displayed on the invoice. */
-  @SerializedName("custom_fields")
-  List<Invoice.CustomField> customFields;
-
   /** The ID of the customer who will be billed. */
   @SerializedName("customer")
   @Getter(lombok.AccessLevel.NONE)
@@ -206,6 +203,10 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
    */
   @SerializedName("customer_tax_ids")
   List<Invoice.CustomerTaxId> customerTaxIds;
+
+  /** Custom fields displayed on the invoice. */
+  @SerializedName("custom_fields")
+  List<Invoice.CustomField> customFields;
 
   /**
    * ID of the default payment method for the invoice. It must belong to the customer associated
@@ -365,6 +366,13 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
   Boolean paid;
 
   /**
+   * Returns true if the invoice was manually marked paid, returns false if the invoice hasn't been
+   * paid yet or was paid on Stripe.
+   */
+  @SerializedName("paid_out_of_band")
+  Boolean paidOutOfBand;
+
+  /**
    * The PaymentIntent associated with this invoice. The PaymentIntent is generated when the invoice
    * is finalized, and can then be used to pay the invoice. Note that voiding an invoice will cancel
    * the PaymentIntent.
@@ -448,6 +456,12 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
   @SerializedName("tax")
   Long tax;
 
+  /** ID of the test clock this invoice belongs to. */
+  @SerializedName("test_clock")
+  @Getter(lombok.AccessLevel.NONE)
+  @Setter(lombok.AccessLevel.NONE)
+  ExpandableField<TestClock> testClock;
+
   @SerializedName("threshold_reason")
   ThresholdReason thresholdReason;
 
@@ -457,7 +471,7 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
 
   /** The aggregate amounts calculated per discount across all line items. */
   @SerializedName("total_discount_amounts")
-  List<DiscountAmount> totalDiscountAmounts;
+  List<Invoice.DiscountAmount> totalDiscountAmounts;
 
   /** The aggregate amounts calculated per tax rate for all line items. */
   @SerializedName("total_tax_amounts")
@@ -626,6 +640,24 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
   public void setSubscriptionObject(Subscription expandableObject) {
     this.subscription =
         new ExpandableField<Subscription>(expandableObject.getId(), expandableObject);
+  }
+
+  /** Get ID of expandable {@code testClock} object. */
+  public String getTestClock() {
+    return (this.testClock != null) ? this.testClock.getId() : null;
+  }
+
+  public void setTestClock(String id) {
+    this.testClock = ApiResource.setExpandableFieldId(id, this.testClock);
+  }
+
+  /** Get expanded {@code testClock}. */
+  public TestClock getTestClockObject() {
+    return (this.testClock != null) ? this.testClock.getExpanded() : null;
+  }
+
+  public void setTestClockObject(TestClock expandableObject) {
+    this.testClock = new ExpandableField<TestClock>(expandableObject.getId(), expandableObject);
   }
 
   /** Get IDs of expandable {@code accountTaxIds} object list. */
@@ -1464,7 +1496,8 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
      * jp_cn}, {@code jp_rn}, {@code li_uid}, {@code my_itn}, {@code us_ein}, {@code kr_brn}, {@code
      * ca_qst}, {@code ca_gst_hst}, {@code ca_pst_bc}, {@code ca_pst_mb}, {@code ca_pst_sk}, {@code
      * my_sst}, {@code sg_gst}, {@code ae_trn}, {@code cl_tin}, {@code sa_vat}, {@code id_npwp},
-     * {@code my_frp}, {@code il_vat}, or {@code unknown}.
+     * {@code my_frp}, {@code il_vat}, {@code ge_vat}, {@code ua_vat}, {@code is_vat}, or {@code
+     * unknown}.
      */
     @SerializedName("type")
     String type;
@@ -1512,6 +1545,13 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
   @EqualsAndHashCode(callSuper = false)
   public static class PaymentMethodOptions extends StripeObject {
     /**
+     * If paying by {@code acss_debit}, this sub-hash contains details about the Canadian
+     * pre-authorized debit payment method options to pass to the invoice’s PaymentIntent.
+     */
+    @SerializedName("acss_debit")
+    AcssDebit acssDebit;
+
+    /**
      * If paying by {@code bancontact}, this sub-hash contains details about the Bancontact payment
      * method options to pass to the invoice’s PaymentIntent.
      */
@@ -1524,6 +1564,42 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
      */
     @SerializedName("card")
     Card card;
+
+    /**
+     * If paying by {@code konbini}, this sub-hash contains details about the Konbini payment method
+     * options to pass to the invoice’s PaymentIntent.
+     */
+    @SerializedName("konbini")
+    Konbini konbini;
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class AcssDebit extends StripeObject {
+      @SerializedName("mandate_options")
+      MandateOptions mandateOptions;
+
+      /**
+       * Bank account verification method.
+       *
+       * <p>One of {@code automatic}, {@code instant}, or {@code microdeposits}.
+       */
+      @SerializedName("verification_method")
+      String verificationMethod;
+
+      @Getter
+      @Setter
+      @EqualsAndHashCode(callSuper = false)
+      public static class MandateOptions extends StripeObject {
+        /**
+         * Transaction type of the mandate.
+         *
+         * <p>One of {@code business}, or {@code personal}.
+         */
+        @SerializedName("transaction_type")
+        String transactionType;
+      }
+    }
 
     @Getter
     @Setter
@@ -1557,6 +1633,11 @@ public class Invoice extends ApiResource implements HasId, MetadataStore<Invoice
       @SerializedName("request_three_d_secure")
       String requestThreeDSecure;
     }
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class Konbini extends StripeObject {}
   }
 
   @Getter

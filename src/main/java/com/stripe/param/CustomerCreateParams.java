@@ -121,6 +121,10 @@ public class CustomerCreateParams extends ApiRequestParams {
   @SerializedName("tax_id_data")
   List<TaxIdData> taxIdData;
 
+  /** ID of the test clock to attach to the customer. */
+  @SerializedName("test_clock")
+  String testClock;
+
   private CustomerCreateParams(
       Object address,
       Long balance,
@@ -142,7 +146,8 @@ public class CustomerCreateParams extends ApiRequestParams {
       String source,
       Tax tax,
       EnumParam taxExempt,
-      List<TaxIdData> taxIdData) {
+      List<TaxIdData> taxIdData,
+      String testClock) {
     this.address = address;
     this.balance = balance;
     this.coupon = coupon;
@@ -164,6 +169,7 @@ public class CustomerCreateParams extends ApiRequestParams {
     this.tax = tax;
     this.taxExempt = taxExempt;
     this.taxIdData = taxIdData;
+    this.testClock = testClock;
   }
 
   public static Builder builder() {
@@ -213,6 +219,8 @@ public class CustomerCreateParams extends ApiRequestParams {
 
     private List<TaxIdData> taxIdData;
 
+    private String testClock;
+
     /** Finalize and obtain parameter instance from this builder. */
     public CustomerCreateParams build() {
       return new CustomerCreateParams(
@@ -236,7 +244,8 @@ public class CustomerCreateParams extends ApiRequestParams {
           this.source,
           this.tax,
           this.taxExempt,
-          this.taxIdData);
+          this.taxIdData,
+          this.testClock);
     }
 
     /** The customer's address. */
@@ -518,6 +527,12 @@ public class CustomerCreateParams extends ApiRequestParams {
         this.taxIdData = new ArrayList<>();
       }
       this.taxIdData.addAll(elements);
+      return this;
+    }
+
+    /** ID of the test clock to attach to the customer. */
+    public Builder setTestClock(String testClock) {
+      this.testClock = testClock;
       return this;
     }
   }
@@ -1260,11 +1275,11 @@ public class CustomerCreateParams extends ApiRequestParams {
      * Type of the tax ID, one of {@code ae_trn}, {@code au_abn}, {@code au_arn}, {@code br_cnpj},
      * {@code br_cpf}, {@code ca_bn}, {@code ca_gst_hst}, {@code ca_pst_bc}, {@code ca_pst_mb},
      * {@code ca_pst_sk}, {@code ca_qst}, {@code ch_vat}, {@code cl_tin}, {@code es_cif}, {@code
-     * eu_vat}, {@code gb_vat}, {@code hk_br}, {@code id_npwp}, {@code il_vat}, {@code in_gst},
-     * {@code jp_cn}, {@code jp_rn}, {@code kr_brn}, {@code li_uid}, {@code mx_rfc}, {@code my_frp},
-     * {@code my_itn}, {@code my_sst}, {@code no_vat}, {@code nz_gst}, {@code ru_inn}, {@code
-     * ru_kpp}, {@code sa_vat}, {@code sg_gst}, {@code sg_uen}, {@code th_vat}, {@code tw_vat},
-     * {@code us_ein}, or {@code za_vat}.
+     * eu_vat}, {@code gb_vat}, {@code ge_vat}, {@code hk_br}, {@code id_npwp}, {@code il_vat},
+     * {@code in_gst}, {@code is_vat}, {@code jp_cn}, {@code jp_rn}, {@code kr_brn}, {@code li_uid},
+     * {@code mx_rfc}, {@code my_frp}, {@code my_itn}, {@code my_sst}, {@code no_vat}, {@code
+     * nz_gst}, {@code ru_inn}, {@code ru_kpp}, {@code sa_vat}, {@code sg_gst}, {@code sg_uen},
+     * {@code th_vat}, {@code tw_vat}, {@code ua_vat}, {@code us_ein}, or {@code za_vat}.
      */
     @SerializedName("type")
     Type type;
@@ -1325,11 +1340,11 @@ public class CustomerCreateParams extends ApiRequestParams {
        * Type of the tax ID, one of {@code ae_trn}, {@code au_abn}, {@code au_arn}, {@code br_cnpj},
        * {@code br_cpf}, {@code ca_bn}, {@code ca_gst_hst}, {@code ca_pst_bc}, {@code ca_pst_mb},
        * {@code ca_pst_sk}, {@code ca_qst}, {@code ch_vat}, {@code cl_tin}, {@code es_cif}, {@code
-       * eu_vat}, {@code gb_vat}, {@code hk_br}, {@code id_npwp}, {@code il_vat}, {@code in_gst},
-       * {@code jp_cn}, {@code jp_rn}, {@code kr_brn}, {@code li_uid}, {@code mx_rfc}, {@code
-       * my_frp}, {@code my_itn}, {@code my_sst}, {@code no_vat}, {@code nz_gst}, {@code ru_inn},
-       * {@code ru_kpp}, {@code sa_vat}, {@code sg_gst}, {@code sg_uen}, {@code th_vat}, {@code
-       * tw_vat}, {@code us_ein}, or {@code za_vat}.
+       * eu_vat}, {@code gb_vat}, {@code ge_vat}, {@code hk_br}, {@code id_npwp}, {@code il_vat},
+       * {@code in_gst}, {@code is_vat}, {@code jp_cn}, {@code jp_rn}, {@code kr_brn}, {@code
+       * li_uid}, {@code mx_rfc}, {@code my_frp}, {@code my_itn}, {@code my_sst}, {@code no_vat},
+       * {@code nz_gst}, {@code ru_inn}, {@code ru_kpp}, {@code sa_vat}, {@code sg_gst}, {@code
+       * sg_uen}, {@code th_vat}, {@code tw_vat}, {@code ua_vat}, {@code us_ein}, or {@code za_vat}.
        */
       public Builder setType(Type type) {
         this.type = type;
@@ -1392,6 +1407,9 @@ public class CustomerCreateParams extends ApiRequestParams {
       @SerializedName("gb_vat")
       GB_VAT("gb_vat"),
 
+      @SerializedName("ge_vat")
+      GE_VAT("ge_vat"),
+
       @SerializedName("hk_br")
       HK_BR("hk_br"),
 
@@ -1403,6 +1421,9 @@ public class CustomerCreateParams extends ApiRequestParams {
 
       @SerializedName("in_gst")
       IN_GST("in_gst"),
+
+      @SerializedName("is_vat")
+      IS_VAT("is_vat"),
 
       @SerializedName("jp_cn")
       JP_CN("jp_cn"),
@@ -1454,6 +1475,9 @@ public class CustomerCreateParams extends ApiRequestParams {
 
       @SerializedName("tw_vat")
       TW_VAT("tw_vat"),
+
+      @SerializedName("ua_vat")
+      UA_VAT("ua_vat"),
 
       @SerializedName("us_ein")
       US_EIN("us_ein"),

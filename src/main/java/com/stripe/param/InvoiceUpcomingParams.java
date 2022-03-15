@@ -38,9 +38,10 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
 
   /**
    * The coupons to redeem into discounts for the invoice preview. If not specified, inherits the
-   * discount from the customer or subscription. Pass an empty string to avoid inheriting any
-   * discounts. To preview the upcoming invoice for a subscription that hasn't been created, use
-   * {@code coupon} instead.
+   * discount from the customer or subscription. This only works for coupons directly applied to the
+   * invoice. To apply a coupon to a subscription, you must use the {@code coupon} parameter
+   * instead. Pass an empty string to avoid inheriting any discounts. To preview the upcoming
+   * invoice for a subscription that hasn't been created, use {@code coupon} instead.
    */
   @SerializedName("discounts")
   Object discounts;
@@ -162,7 +163,8 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
    * Indicates if a plan's {@code trial_period_days} should be applied to the subscription. Setting
    * {@code subscription_trial_end} per subscription is preferred, and this defaults to {@code
    * false}. Setting this flag to {@code true} together with {@code subscription_trial_end} is not
-   * allowed.
+   * allowed. See <a href="https://stripe.com/docs/billing/subscriptions/trials">Using trial periods
+   * on subscriptions</a> to learn more.
    */
   @SerializedName("subscription_trial_from_plan")
   Boolean subscriptionTrialFromPlan;
@@ -345,9 +347,10 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
 
     /**
      * The coupons to redeem into discounts for the invoice preview. If not specified, inherits the
-     * discount from the customer or subscription. Pass an empty string to avoid inheriting any
-     * discounts. To preview the upcoming invoice for a subscription that hasn't been created, use
-     * {@code coupon} instead.
+     * discount from the customer or subscription. This only works for coupons directly applied to
+     * the invoice. To apply a coupon to a subscription, you must use the {@code coupon} parameter
+     * instead. Pass an empty string to avoid inheriting any discounts. To preview the upcoming
+     * invoice for a subscription that hasn't been created, use {@code coupon} instead.
      */
     public Builder setDiscounts(EmptyParam discounts) {
       this.discounts = discounts;
@@ -356,9 +359,10 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
 
     /**
      * The coupons to redeem into discounts for the invoice preview. If not specified, inherits the
-     * discount from the customer or subscription. Pass an empty string to avoid inheriting any
-     * discounts. To preview the upcoming invoice for a subscription that hasn't been created, use
-     * {@code coupon} instead.
+     * discount from the customer or subscription. This only works for coupons directly applied to
+     * the invoice. To apply a coupon to a subscription, you must use the {@code coupon} parameter
+     * instead. Pass an empty string to avoid inheriting any discounts. To preview the upcoming
+     * invoice for a subscription that hasn't been created, use {@code coupon} instead.
      */
     public Builder setDiscounts(List<Discount> discounts) {
       this.discounts = discounts;
@@ -659,7 +663,8 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
      * Indicates if a plan's {@code trial_period_days} should be applied to the subscription.
      * Setting {@code subscription_trial_end} per subscription is preferred, and this defaults to
      * {@code false}. Setting this flag to {@code true} together with {@code subscription_trial_end}
-     * is not allowed.
+     * is not allowed. See <a href="https://stripe.com/docs/billing/subscriptions/trials">Using
+     * trial periods on subscriptions</a> to learn more.
      */
     public Builder setSubscriptionTrialFromPlan(Boolean subscriptionTrialFromPlan) {
       this.subscriptionTrialFromPlan = subscriptionTrialFromPlan;
@@ -1413,11 +1418,11 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
        * Type of the tax ID, one of {@code ae_trn}, {@code au_abn}, {@code au_arn}, {@code br_cnpj},
        * {@code br_cpf}, {@code ca_bn}, {@code ca_gst_hst}, {@code ca_pst_bc}, {@code ca_pst_mb},
        * {@code ca_pst_sk}, {@code ca_qst}, {@code ch_vat}, {@code cl_tin}, {@code es_cif}, {@code
-       * eu_vat}, {@code gb_vat}, {@code hk_br}, {@code id_npwp}, {@code il_vat}, {@code in_gst},
-       * {@code jp_cn}, {@code jp_rn}, {@code kr_brn}, {@code li_uid}, {@code mx_rfc}, {@code
-       * my_frp}, {@code my_itn}, {@code my_sst}, {@code no_vat}, {@code nz_gst}, {@code ru_inn},
-       * {@code ru_kpp}, {@code sa_vat}, {@code sg_gst}, {@code sg_uen}, {@code th_vat}, {@code
-       * tw_vat}, {@code us_ein}, or {@code za_vat}.
+       * eu_vat}, {@code gb_vat}, {@code ge_vat}, {@code hk_br}, {@code id_npwp}, {@code il_vat},
+       * {@code in_gst}, {@code is_vat}, {@code jp_cn}, {@code jp_rn}, {@code kr_brn}, {@code
+       * li_uid}, {@code mx_rfc}, {@code my_frp}, {@code my_itn}, {@code my_sst}, {@code no_vat},
+       * {@code nz_gst}, {@code ru_inn}, {@code ru_kpp}, {@code sa_vat}, {@code sg_gst}, {@code
+       * sg_uen}, {@code th_vat}, {@code tw_vat}, {@code ua_vat}, {@code us_ein}, or {@code za_vat}.
        */
       @SerializedName("type")
       Type type;
@@ -1480,11 +1485,12 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
          * Type of the tax ID, one of {@code ae_trn}, {@code au_abn}, {@code au_arn}, {@code
          * br_cnpj}, {@code br_cpf}, {@code ca_bn}, {@code ca_gst_hst}, {@code ca_pst_bc}, {@code
          * ca_pst_mb}, {@code ca_pst_sk}, {@code ca_qst}, {@code ch_vat}, {@code cl_tin}, {@code
-         * es_cif}, {@code eu_vat}, {@code gb_vat}, {@code hk_br}, {@code id_npwp}, {@code il_vat},
-         * {@code in_gst}, {@code jp_cn}, {@code jp_rn}, {@code kr_brn}, {@code li_uid}, {@code
-         * mx_rfc}, {@code my_frp}, {@code my_itn}, {@code my_sst}, {@code no_vat}, {@code nz_gst},
-         * {@code ru_inn}, {@code ru_kpp}, {@code sa_vat}, {@code sg_gst}, {@code sg_uen}, {@code
-         * th_vat}, {@code tw_vat}, {@code us_ein}, or {@code za_vat}.
+         * es_cif}, {@code eu_vat}, {@code gb_vat}, {@code ge_vat}, {@code hk_br}, {@code id_npwp},
+         * {@code il_vat}, {@code in_gst}, {@code is_vat}, {@code jp_cn}, {@code jp_rn}, {@code
+         * kr_brn}, {@code li_uid}, {@code mx_rfc}, {@code my_frp}, {@code my_itn}, {@code my_sst},
+         * {@code no_vat}, {@code nz_gst}, {@code ru_inn}, {@code ru_kpp}, {@code sa_vat}, {@code
+         * sg_gst}, {@code sg_uen}, {@code th_vat}, {@code tw_vat}, {@code ua_vat}, {@code us_ein},
+         * or {@code za_vat}.
          */
         public Builder setType(Type type) {
           this.type = type;
@@ -1547,6 +1553,9 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
         @SerializedName("gb_vat")
         GB_VAT("gb_vat"),
 
+        @SerializedName("ge_vat")
+        GE_VAT("ge_vat"),
+
         @SerializedName("hk_br")
         HK_BR("hk_br"),
 
@@ -1558,6 +1567,9 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
 
         @SerializedName("in_gst")
         IN_GST("in_gst"),
+
+        @SerializedName("is_vat")
+        IS_VAT("is_vat"),
 
         @SerializedName("jp_cn")
         JP_CN("jp_cn"),
@@ -1609,6 +1621,9 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
 
         @SerializedName("tw_vat")
         TW_VAT("tw_vat"),
+
+        @SerializedName("ua_vat")
+        UA_VAT("ua_vat"),
 
         @SerializedName("us_ein")
         US_EIN("us_ein"),
@@ -2939,7 +2954,9 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
       @SerializedName("product")
       String product;
 
-      /** The recurring components of a price such as {@code interval} and {@code usage_type}. */
+      /**
+       * The recurring components of a price such as {@code interval} and {@code interval_count}.
+       */
       @SerializedName("recurring")
       Recurring recurring;
 
@@ -3054,7 +3071,9 @@ public class InvoiceUpcomingParams extends ApiRequestParams {
           return this;
         }
 
-        /** The recurring components of a price such as {@code interval} and {@code usage_type}. */
+        /**
+         * The recurring components of a price such as {@code interval} and {@code interval_count}.
+         */
         public Builder setRecurring(Recurring recurring) {
           this.recurring = recurring;
           return this;

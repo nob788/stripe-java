@@ -252,7 +252,9 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
   /**
    * Indicates if a plan's {@code trial_period_days} should be applied to the subscription. Setting
    * {@code trial_end} per subscription is preferred, and this defaults to {@code false}. Setting
-   * this flag to {@code true} together with {@code trial_end} is not allowed.
+   * this flag to {@code true} together with {@code trial_end} is not allowed. See <a
+   * href="https://stripe.com/docs/billing/subscriptions/trials">Using trial periods on
+   * subscriptions</a> to learn more.
    */
   @SerializedName("trial_from_plan")
   Boolean trialFromPlan;
@@ -957,7 +959,9 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
     /**
      * Indicates if a plan's {@code trial_period_days} should be applied to the subscription.
      * Setting {@code trial_end} per subscription is preferred, and this defaults to {@code false}.
-     * Setting this flag to {@code true} together with {@code trial_end} is not allowed.
+     * Setting this flag to {@code true} together with {@code trial_end} is not allowed. See <a
+     * href="https://stripe.com/docs/billing/subscriptions/trials">Using trial periods on
+     * subscriptions</a> to learn more.
      */
     public Builder setTrialFromPlan(Boolean trialFromPlan) {
       this.trialFromPlan = trialFromPlan;
@@ -1955,7 +1959,9 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
       @SerializedName("product")
       Object product;
 
-      /** The recurring components of a price such as {@code interval} and {@code usage_type}. */
+      /**
+       * The recurring components of a price such as {@code interval} and {@code interval_count}.
+       */
       @SerializedName("recurring")
       Recurring recurring;
 
@@ -2086,7 +2092,9 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
           return this;
         }
 
-        /** The recurring components of a price such as {@code interval} and {@code usage_type}. */
+        /**
+         * The recurring components of a price such as {@code interval} and {@code interval_count}.
+         */
         public Builder setRecurring(Recurring recurring) {
           this.recurring = recurring;
           return this;
@@ -2520,6 +2528,13 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
     @Getter
     public static class PaymentMethodOptions {
       /**
+       * This sub-hash contains details about the Canadian pre-authorized debit payment method
+       * options to pass to the invoice’s PaymentIntent.
+       */
+      @SerializedName("acss_debit")
+      Object acssDebit;
+
+      /**
        * This sub-hash contains details about the Bancontact payment method options to pass to the
        * invoice’s PaymentIntent.
        */
@@ -2542,11 +2557,24 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
       @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
       Map<String, Object> extraParams;
 
+      /**
+       * This sub-hash contains details about the Konbini payment method options to pass to the
+       * invoice’s PaymentIntent.
+       */
+      @SerializedName("konbini")
+      Object konbini;
+
       private PaymentMethodOptions(
-          Object bancontact, Object card, Map<String, Object> extraParams) {
+          Object acssDebit,
+          Object bancontact,
+          Object card,
+          Map<String, Object> extraParams,
+          Object konbini) {
+        this.acssDebit = acssDebit;
         this.bancontact = bancontact;
         this.card = card;
         this.extraParams = extraParams;
+        this.konbini = konbini;
       }
 
       public static Builder builder() {
@@ -2554,15 +2582,38 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
       }
 
       public static class Builder {
+        private Object acssDebit;
+
         private Object bancontact;
 
         private Object card;
 
         private Map<String, Object> extraParams;
 
+        private Object konbini;
+
         /** Finalize and obtain parameter instance from this builder. */
         public PaymentMethodOptions build() {
-          return new PaymentMethodOptions(this.bancontact, this.card, this.extraParams);
+          return new PaymentMethodOptions(
+              this.acssDebit, this.bancontact, this.card, this.extraParams, this.konbini);
+        }
+
+        /**
+         * This sub-hash contains details about the Canadian pre-authorized debit payment method
+         * options to pass to the invoice’s PaymentIntent.
+         */
+        public Builder setAcssDebit(AcssDebit acssDebit) {
+          this.acssDebit = acssDebit;
+          return this;
+        }
+
+        /**
+         * This sub-hash contains details about the Canadian pre-authorized debit payment method
+         * options to pass to the invoice’s PaymentIntent.
+         */
+        public Builder setAcssDebit(EmptyParam acssDebit) {
+          this.acssDebit = acssDebit;
+          return this;
         }
 
         /**
@@ -2629,6 +2680,219 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
           }
           this.extraParams.putAll(map);
           return this;
+        }
+
+        /**
+         * This sub-hash contains details about the Konbini payment method options to pass to the
+         * invoice’s PaymentIntent.
+         */
+        public Builder setKonbini(Konbini konbini) {
+          this.konbini = konbini;
+          return this;
+        }
+
+        /**
+         * This sub-hash contains details about the Konbini payment method options to pass to the
+         * invoice’s PaymentIntent.
+         */
+        public Builder setKonbini(EmptyParam konbini) {
+          this.konbini = konbini;
+          return this;
+        }
+      }
+
+      @Getter
+      public static class AcssDebit {
+        /**
+         * Map of extra parameters for custom features not available in this client library. The
+         * content in this map is not serialized under this field's {@code @SerializedName} value.
+         * Instead, each key/value pair is serialized as if the key is a root-level field
+         * (serialized) name in this param object. Effectively, this map is flattened to its parent
+         * instance.
+         */
+        @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+        Map<String, Object> extraParams;
+
+        /** Additional fields for Mandate creation. */
+        @SerializedName("mandate_options")
+        MandateOptions mandateOptions;
+
+        /** Verification method for the intent. */
+        @SerializedName("verification_method")
+        VerificationMethod verificationMethod;
+
+        private AcssDebit(
+            Map<String, Object> extraParams,
+            MandateOptions mandateOptions,
+            VerificationMethod verificationMethod) {
+          this.extraParams = extraParams;
+          this.mandateOptions = mandateOptions;
+          this.verificationMethod = verificationMethod;
+        }
+
+        public static Builder builder() {
+          return new Builder();
+        }
+
+        public static class Builder {
+          private Map<String, Object> extraParams;
+
+          private MandateOptions mandateOptions;
+
+          private VerificationMethod verificationMethod;
+
+          /** Finalize and obtain parameter instance from this builder. */
+          public AcssDebit build() {
+            return new AcssDebit(this.extraParams, this.mandateOptions, this.verificationMethod);
+          }
+
+          /**
+           * Add a key/value pair to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.AcssDebit#extraParams}
+           * for the field documentation.
+           */
+          public Builder putExtraParam(String key, Object value) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.put(key, value);
+            return this;
+          }
+
+          /**
+           * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.AcssDebit#extraParams}
+           * for the field documentation.
+           */
+          public Builder putAllExtraParam(Map<String, Object> map) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.putAll(map);
+            return this;
+          }
+
+          /** Additional fields for Mandate creation. */
+          public Builder setMandateOptions(MandateOptions mandateOptions) {
+            this.mandateOptions = mandateOptions;
+            return this;
+          }
+
+          /** Verification method for the intent. */
+          public Builder setVerificationMethod(VerificationMethod verificationMethod) {
+            this.verificationMethod = verificationMethod;
+            return this;
+          }
+        }
+
+        @Getter
+        public static class MandateOptions {
+          /**
+           * Map of extra parameters for custom features not available in this client library. The
+           * content in this map is not serialized under this field's {@code @SerializedName} value.
+           * Instead, each key/value pair is serialized as if the key is a root-level field
+           * (serialized) name in this param object. Effectively, this map is flattened to its
+           * parent instance.
+           */
+          @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+          Map<String, Object> extraParams;
+
+          /** Transaction type of the mandate. */
+          @SerializedName("transaction_type")
+          TransactionType transactionType;
+
+          private MandateOptions(Map<String, Object> extraParams, TransactionType transactionType) {
+            this.extraParams = extraParams;
+            this.transactionType = transactionType;
+          }
+
+          public static Builder builder() {
+            return new Builder();
+          }
+
+          public static class Builder {
+            private Map<String, Object> extraParams;
+
+            private TransactionType transactionType;
+
+            /** Finalize and obtain parameter instance from this builder. */
+            public MandateOptions build() {
+              return new MandateOptions(this.extraParams, this.transactionType);
+            }
+
+            /**
+             * Add a key/value pair to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.AcssDebit.MandateOptions#extraParams}
+             * for the field documentation.
+             */
+            public Builder putExtraParam(String key, Object value) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.put(key, value);
+              return this;
+            }
+
+            /**
+             * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.AcssDebit.MandateOptions#extraParams}
+             * for the field documentation.
+             */
+            public Builder putAllExtraParam(Map<String, Object> map) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.putAll(map);
+              return this;
+            }
+
+            /** Transaction type of the mandate. */
+            public Builder setTransactionType(TransactionType transactionType) {
+              this.transactionType = transactionType;
+              return this;
+            }
+          }
+
+          public enum TransactionType implements ApiRequestParams.EnumParam {
+            @SerializedName("business")
+            BUSINESS("business"),
+
+            @SerializedName("personal")
+            PERSONAL("personal");
+
+            @Getter(onMethod_ = {@Override})
+            private final String value;
+
+            TransactionType(String value) {
+              this.value = value;
+            }
+          }
+        }
+
+        public enum VerificationMethod implements ApiRequestParams.EnumParam {
+          @SerializedName("automatic")
+          AUTOMATIC("automatic"),
+
+          @SerializedName("instant")
+          INSTANT("instant"),
+
+          @SerializedName("microdeposits")
+          MICRODEPOSITS("microdeposits");
+
+          @Getter(onMethod_ = {@Override})
+          private final String value;
+
+          VerificationMethod(String value) {
+            this.value = value;
+          }
         }
       }
 
@@ -2744,6 +3008,10 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
         @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
         Map<String, Object> extraParams;
 
+        /** Configuration options for setting up an eMandate for cards issued in India. */
+        @SerializedName("mandate_options")
+        MandateOptions mandateOptions;
+
         /**
          * We strongly recommend that you rely on our SCA Engine to automatically prompt your
          * customers for authentication based on risk level and <a
@@ -2757,8 +3025,12 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
         @SerializedName("request_three_d_secure")
         RequestThreeDSecure requestThreeDSecure;
 
-        private Card(Map<String, Object> extraParams, RequestThreeDSecure requestThreeDSecure) {
+        private Card(
+            Map<String, Object> extraParams,
+            MandateOptions mandateOptions,
+            RequestThreeDSecure requestThreeDSecure) {
           this.extraParams = extraParams;
+          this.mandateOptions = mandateOptions;
           this.requestThreeDSecure = requestThreeDSecure;
         }
 
@@ -2769,11 +3041,13 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
         public static class Builder {
           private Map<String, Object> extraParams;
 
+          private MandateOptions mandateOptions;
+
           private RequestThreeDSecure requestThreeDSecure;
 
           /** Finalize and obtain parameter instance from this builder. */
           public Card build() {
-            return new Card(this.extraParams, this.requestThreeDSecure);
+            return new Card(this.extraParams, this.mandateOptions, this.requestThreeDSecure);
           }
 
           /**
@@ -2806,6 +3080,12 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
             return this;
           }
 
+          /** Configuration options for setting up an eMandate for cards issued in India. */
+          public Builder setMandateOptions(MandateOptions mandateOptions) {
+            this.mandateOptions = mandateOptions;
+            return this;
+          }
+
           /**
            * We strongly recommend that you rely on our SCA Engine to automatically prompt your
            * customers for authentication based on risk level and <a
@@ -2819,6 +3099,148 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
           public Builder setRequestThreeDSecure(RequestThreeDSecure requestThreeDSecure) {
             this.requestThreeDSecure = requestThreeDSecure;
             return this;
+          }
+        }
+
+        @Getter
+        public static class MandateOptions {
+          /** Amount to be charged for future payments. */
+          @SerializedName("amount")
+          Long amount;
+
+          /**
+           * One of {@code fixed} or {@code maximum}. If {@code fixed}, the {@code amount} param
+           * refers to the exact amount to be charged in future payments. If {@code maximum}, the
+           * amount charged can be up to the value passed for the {@code amount} param.
+           */
+          @SerializedName("amount_type")
+          AmountType amountType;
+
+          /**
+           * A description of the mandate or subscription that is meant to be displayed to the
+           * customer.
+           */
+          @SerializedName("description")
+          Object description;
+
+          /**
+           * Map of extra parameters for custom features not available in this client library. The
+           * content in this map is not serialized under this field's {@code @SerializedName} value.
+           * Instead, each key/value pair is serialized as if the key is a root-level field
+           * (serialized) name in this param object. Effectively, this map is flattened to its
+           * parent instance.
+           */
+          @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+          Map<String, Object> extraParams;
+
+          private MandateOptions(
+              Long amount,
+              AmountType amountType,
+              Object description,
+              Map<String, Object> extraParams) {
+            this.amount = amount;
+            this.amountType = amountType;
+            this.description = description;
+            this.extraParams = extraParams;
+          }
+
+          public static Builder builder() {
+            return new Builder();
+          }
+
+          public static class Builder {
+            private Long amount;
+
+            private AmountType amountType;
+
+            private Object description;
+
+            private Map<String, Object> extraParams;
+
+            /** Finalize and obtain parameter instance from this builder. */
+            public MandateOptions build() {
+              return new MandateOptions(
+                  this.amount, this.amountType, this.description, this.extraParams);
+            }
+
+            /** Amount to be charged for future payments. */
+            public Builder setAmount(Long amount) {
+              this.amount = amount;
+              return this;
+            }
+
+            /**
+             * One of {@code fixed} or {@code maximum}. If {@code fixed}, the {@code amount} param
+             * refers to the exact amount to be charged in future payments. If {@code maximum}, the
+             * amount charged can be up to the value passed for the {@code amount} param.
+             */
+            public Builder setAmountType(AmountType amountType) {
+              this.amountType = amountType;
+              return this;
+            }
+
+            /**
+             * A description of the mandate or subscription that is meant to be displayed to the
+             * customer.
+             */
+            public Builder setDescription(String description) {
+              this.description = description;
+              return this;
+            }
+
+            /**
+             * A description of the mandate or subscription that is meant to be displayed to the
+             * customer.
+             */
+            public Builder setDescription(EmptyParam description) {
+              this.description = description;
+              return this;
+            }
+
+            /**
+             * Add a key/value pair to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.Card.MandateOptions#extraParams}
+             * for the field documentation.
+             */
+            public Builder putExtraParam(String key, Object value) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.put(key, value);
+              return this;
+            }
+
+            /**
+             * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+             * `put/putAll` call, and subsequent calls add additional key/value pairs to the
+             * original map. See {@link
+             * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.Card.MandateOptions#extraParams}
+             * for the field documentation.
+             */
+            public Builder putAllExtraParam(Map<String, Object> map) {
+              if (this.extraParams == null) {
+                this.extraParams = new HashMap<>();
+              }
+              this.extraParams.putAll(map);
+              return this;
+            }
+          }
+
+          public enum AmountType implements ApiRequestParams.EnumParam {
+            @SerializedName("fixed")
+            FIXED("fixed"),
+
+            @SerializedName("maximum")
+            MAXIMUM("maximum");
+
+            @Getter(onMethod_ = {@Override})
+            private final String value;
+
+            AmountType(String value) {
+              this.value = value;
+            }
           }
         }
 
@@ -2837,6 +3259,66 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
           }
         }
       }
+
+      @Getter
+      public static class Konbini {
+        /**
+         * Map of extra parameters for custom features not available in this client library. The
+         * content in this map is not serialized under this field's {@code @SerializedName} value.
+         * Instead, each key/value pair is serialized as if the key is a root-level field
+         * (serialized) name in this param object. Effectively, this map is flattened to its parent
+         * instance.
+         */
+        @SerializedName(ApiRequestParams.EXTRA_PARAMS_KEY)
+        Map<String, Object> extraParams;
+
+        private Konbini(Map<String, Object> extraParams) {
+          this.extraParams = extraParams;
+        }
+
+        public static Builder builder() {
+          return new Builder();
+        }
+
+        public static class Builder {
+          private Map<String, Object> extraParams;
+
+          /** Finalize and obtain parameter instance from this builder. */
+          public Konbini build() {
+            return new Konbini(this.extraParams);
+          }
+
+          /**
+           * Add a key/value pair to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.Konbini#extraParams} for
+           * the field documentation.
+           */
+          public Builder putExtraParam(String key, Object value) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.put(key, value);
+            return this;
+          }
+
+          /**
+           * Add all map key/value pairs to `extraParams` map. A map is initialized for the first
+           * `put/putAll` call, and subsequent calls add additional key/value pairs to the original
+           * map. See {@link
+           * SubscriptionUpdateParams.PaymentSettings.PaymentMethodOptions.Konbini#extraParams} for
+           * the field documentation.
+           */
+          public Builder putAllExtraParam(Map<String, Object> map) {
+            if (this.extraParams == null) {
+              this.extraParams = new HashMap<>();
+            }
+            this.extraParams.putAll(map);
+            return this;
+          }
+        }
+      }
     }
 
     public enum PaymentMethodType implements ApiRequestParams.EnumParam {
@@ -2845,6 +3327,9 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
 
       @SerializedName("ach_debit")
       ACH_DEBIT("ach_debit"),
+
+      @SerializedName("acss_debit")
+      ACSS_DEBIT("acss_debit"),
 
       @SerializedName("au_becs_debit")
       AU_BECS_DEBIT("au_becs_debit"),
@@ -2867,8 +3352,14 @@ public class SubscriptionUpdateParams extends ApiRequestParams {
       @SerializedName("giropay")
       GIROPAY("giropay"),
 
+      @SerializedName("grabpay")
+      GRABPAY("grabpay"),
+
       @SerializedName("ideal")
       IDEAL("ideal"),
+
+      @SerializedName("konbini")
+      KONBINI("konbini"),
 
       @SerializedName("sepa_credit_transfer")
       SEPA_CREDIT_TRANSFER("sepa_credit_transfer"),
