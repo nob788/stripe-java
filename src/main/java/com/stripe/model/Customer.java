@@ -534,6 +534,47 @@ public class Customer extends ApiResource implements HasId, MetadataStore<Custom
     return ApiResource.requestCollection(url, params, PaymentMethodCollection.class, options);
   }
 
+  /** Retrieves a PaymentMethod object. */
+  public PaymentMethod retrieve(String customer, String paymentMethod) throws StripeException {
+    return retrieve(customer, paymentMethod, (Map<String, Object>) null, (RequestOptions) null);
+  }
+
+  /** Retrieves a PaymentMethod object. */
+  public PaymentMethod retrieve(String customer, String paymentMethod, RequestOptions options)
+      throws StripeException {
+    return retrieve(customer, paymentMethod, (Map<String, Object>) null, options);
+  }
+
+  /** Retrieves a PaymentMethod object. */
+  public PaymentMethod retrieve(
+      String customer, String paymentMethod, Map<String, Object> params, RequestOptions options)
+      throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/customers/%s/payment_methods/%s",
+                ApiResource.urlEncodeId(customer), ApiResource.urlEncodeId(paymentMethod)));
+    return ApiResource.request(
+        ApiResource.RequestMethod.GET, url, params, PaymentMethod.class, options);
+  }
+
+  /** Retrieves a PaymentMethod object. */
+  public PaymentMethod retrieve(
+      String customer, String paymentMethod, CustomerRetrieveParams params, RequestOptions options)
+      throws StripeException {
+    String url =
+        String.format(
+            "%s%s",
+            Stripe.getApiBase(),
+            String.format(
+                "/v1/customers/%s/payment_methods/%s",
+                ApiResource.urlEncodeId(customer), ApiResource.urlEncodeId(paymentMethod)));
+    return ApiResource.request(
+        ApiResource.RequestMethod.GET, url, params, PaymentMethod.class, options);
+  }
+
   /**
    * Returns a list of transactions that updated the customer’s <a
    * href="https://stripe.com/docs/billing/customer/balance">balances</a>.
