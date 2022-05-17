@@ -51,7 +51,7 @@ public class FinancialAccount extends ApiResource
    * requested field.
    */
   @SerializedName("features")
-  Features features;
+  FinancialAccountFeatures features;
 
   /** The set of credentials that resolve to a FinancialAccount. */
   @SerializedName("financial_addresses")
@@ -92,7 +92,7 @@ public class FinancialAccount extends ApiResource
 
   /** The set of functionalities that the platform can restrict on the FinancialAccount. */
   @SerializedName("platform_restrictions")
-  Features.PlatformRestriction platformRestrictions;
+  FinancialAccountFeatures.PlatformRestriction platformRestrictions;
 
   /** The array of paths to restricted Features in the Features hash. */
   @SerializedName("restricted_features")
@@ -194,24 +194,24 @@ public class FinancialAccount extends ApiResource
   }
 
   /** Updates the Features associated with a FinancialAccount. */
-  public FinancialAccount.Features updateFeatures() throws StripeException {
+  public FinancialAccountFeatures updateFeatures() throws StripeException {
     return updateFeatures((Map<String, Object>) null, (RequestOptions) null);
   }
 
   /** Updates the Features associated with a FinancialAccount. */
-  public FinancialAccount.Features updateFeatures(RequestOptions options) throws StripeException {
+  public FinancialAccountFeatures updateFeatures(RequestOptions options) throws StripeException {
     return updateFeatures((Map<String, Object>) null, options);
   }
 
   /** Updates the Features associated with a FinancialAccount. */
-  public FinancialAccount.Features updateFeatures(Map<String, Object> params)
+  public FinancialAccountFeatures updateFeatures(Map<String, Object> params)
       throws StripeException {
     return updateFeatures(params, (RequestOptions) null);
   }
 
   /** Updates the Features associated with a FinancialAccount. */
-  public FinancialAccount.Features updateFeatures(
-      Map<String, Object> params, RequestOptions options) throws StripeException {
+  public FinancialAccountFeatures updateFeatures(Map<String, Object> params, RequestOptions options)
+      throws StripeException {
     String url =
         String.format(
             "%s%s",
@@ -220,17 +220,17 @@ public class FinancialAccount extends ApiResource
                 "/v1/treasury/financial_accounts/%s/features",
                 ApiResource.urlEncodeId(this.getId())));
     return ApiResource.request(
-        ApiResource.RequestMethod.POST, url, params, FinancialAccount.Features.class, options);
+        ApiResource.RequestMethod.POST, url, params, FinancialAccountFeatures.class, options);
   }
 
   /** Updates the Features associated with a FinancialAccount. */
-  public FinancialAccount.Features updateFeatures(FinancialAccountUpdateFeaturesParams params)
+  public FinancialAccountFeatures updateFeatures(FinancialAccountUpdateFeaturesParams params)
       throws StripeException {
     return updateFeatures(params, (RequestOptions) null);
   }
 
   /** Updates the Features associated with a FinancialAccount. */
-  public FinancialAccount.Features updateFeatures(
+  public FinancialAccountFeatures updateFeatures(
       FinancialAccountUpdateFeaturesParams params, RequestOptions options) throws StripeException {
     String url =
         String.format(
@@ -240,7 +240,7 @@ public class FinancialAccount extends ApiResource
                 "/v1/treasury/financial_accounts/%s/features",
                 ApiResource.urlEncodeId(this.getId())));
     return ApiResource.request(
-        ApiResource.RequestMethod.POST, url, params, FinancialAccount.Features.class, options);
+        ApiResource.RequestMethod.POST, url, params, FinancialAccountFeatures.class, options);
   }
 
   /** Returns a list of FinancialAccounts. */
@@ -308,18 +308,18 @@ public class FinancialAccount extends ApiResource
   }
 
   /** Retrieves Features information associated with the FinancialAccount. */
-  public FinancialAccount.Features retrieveFeatures() throws StripeException {
+  public FinancialAccountFeatures retrieveFeatures() throws StripeException {
     return retrieveFeatures((Map<String, Object>) null, (RequestOptions) null);
   }
 
   /** Retrieves Features information associated with the FinancialAccount. */
-  public FinancialAccount.Features retrieveFeatures(Map<String, Object> params)
+  public FinancialAccountFeatures retrieveFeatures(Map<String, Object> params)
       throws StripeException {
     return retrieveFeatures(params, (RequestOptions) null);
   }
 
   /** Retrieves Features information associated with the FinancialAccount. */
-  public FinancialAccount.Features retrieveFeatures(
+  public FinancialAccountFeatures retrieveFeatures(
       Map<String, Object> params, RequestOptions options) throws StripeException {
     String url =
         String.format(
@@ -329,17 +329,17 @@ public class FinancialAccount extends ApiResource
                 "/v1/treasury/financial_accounts/%s/features",
                 ApiResource.urlEncodeId(this.getId())));
     return ApiResource.request(
-        ApiResource.RequestMethod.GET, url, params, FinancialAccount.Features.class, options);
+        ApiResource.RequestMethod.GET, url, params, FinancialAccountFeatures.class, options);
   }
 
   /** Retrieves Features information associated with the FinancialAccount. */
-  public FinancialAccount.Features retrieveFeatures(FinancialAccountRetrieveFeaturesParams params)
+  public FinancialAccountFeatures retrieveFeatures(FinancialAccountRetrieveFeaturesParams params)
       throws StripeException {
     return retrieveFeatures(params, (RequestOptions) null);
   }
 
   /** Retrieves Features information associated with the FinancialAccount. */
-  public FinancialAccount.Features retrieveFeatures(
+  public FinancialAccountFeatures retrieveFeatures(
       FinancialAccountRetrieveFeaturesParams params, RequestOptions options)
       throws StripeException {
     String url =
@@ -350,7 +350,7 @@ public class FinancialAccount extends ApiResource
                 "/v1/treasury/financial_accounts/%s/features",
                 ApiResource.urlEncodeId(this.getId())));
     return ApiResource.request(
-        ApiResource.RequestMethod.GET, url, params, FinancialAccount.Features.class, options);
+        ApiResource.RequestMethod.GET, url, params, FinancialAccountFeatures.class, options);
   }
 
   @Getter
@@ -371,112 +371,6 @@ public class FinancialAccount extends ApiResource
      */
     @SerializedName("outbound_pending")
     Map<String, Long> outboundPending;
-  }
-
-  @Getter
-  @Setter
-  @EqualsAndHashCode(callSuper = false)
-  public static class Features extends StripeObject {
-    /** Toggle settings for enabling/disabling a feature. */
-    @SerializedName("card_issuing")
-    ToggleSettings cardIssuing;
-
-    /** Toggle settings for enabling/disabling a feature. */
-    @SerializedName("deposit_insurance")
-    ToggleSettings depositInsurance;
-
-    /** Settings related to Financial Addresses features on a Financial Account. */
-    @SerializedName("financial_addresses")
-    FinancialAddress financialAddresses;
-
-    /** InboundTransfers contains inbound transfers features for a FinancialAccount. */
-    @SerializedName("inbound_transfers")
-    InboundTransfer inboundTransfers;
-
-    /** Toggle settings for enabling/disabling a feature. */
-    @SerializedName("intra_stripe_flows")
-    ToggleSettings intraStripeFlows;
-
-    /**
-     * String representing the object's type. Objects of the same type share the same value.
-     *
-     * <p>Equal to {@code treasury.financial_account.features}.
-     */
-    @SerializedName("object")
-    String object;
-
-    /** Settings related to Outbound Payments features on a Financial Account. */
-    @SerializedName("outbound_payments")
-    OutboundPayment outboundPayments;
-
-    /** OutboundTransfers contains outbound transfers features for a FinancialAccount. */
-    @SerializedName("outbound_transfers")
-    OutboundTransfer outboundTransfers;
-
-    @Getter
-    @Setter
-    @EqualsAndHashCode(callSuper = false)
-    public static class FinancialAddress extends StripeObject {
-      /** Toggle settings for enabling/disabling a feature. */
-      @SerializedName("aba")
-      ToggleSettings aba;
-    }
-
-    @Getter
-    @Setter
-    @EqualsAndHashCode(callSuper = false)
-    public static class InboundTransfer extends StripeObject {
-      /** Toggle settings for enabling/disabling a feature. */
-      @SerializedName("ach")
-      ToggleSettings ach;
-    }
-
-    @Getter
-    @Setter
-    @EqualsAndHashCode(callSuper = false)
-    public static class OutboundPayment extends StripeObject {
-      /** Toggle settings for enabling/disabling a feature. */
-      @SerializedName("ach")
-      ToggleSettings ach;
-
-      /** Toggle settings for enabling/disabling a feature. */
-      @SerializedName("us_domestic_wire")
-      ToggleSettings usDomesticWire;
-    }
-
-    @Getter
-    @Setter
-    @EqualsAndHashCode(callSuper = false)
-    public static class OutboundTransfer extends StripeObject {
-      /** Toggle settings for enabling/disabling a feature. */
-      @SerializedName("ach")
-      ToggleSettings ach;
-
-      /** Toggle settings for enabling/disabling a feature. */
-      @SerializedName("us_domestic_wire")
-      ToggleSettings usDomesticWire;
-    }
-
-    @Getter
-    @Setter
-    @EqualsAndHashCode(callSuper = false)
-    public static class PlatformRestriction extends StripeObject {
-      /**
-       * Restricts all inbound money movement.
-       *
-       * <p>One of {@code restricted}, or {@code unrestricted}.
-       */
-      @SerializedName("inbound_flows")
-      String inboundFlows;
-
-      /**
-       * Restricts all outbound money movement.
-       *
-       * <p>One of {@code restricted}, or {@code unrestricted}.
-       */
-      @SerializedName("outbound_flows")
-      String outboundFlows;
-    }
   }
 
   @Getter

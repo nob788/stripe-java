@@ -138,6 +138,9 @@ final class EventDataClassLookup {
     classLookup.put("treasury.credit_reversal", com.stripe.model.treasury.CreditReversal.class);
     classLookup.put("treasury.debit_reversal", com.stripe.model.treasury.DebitReversal.class);
     classLookup.put("treasury.financial_account", com.stripe.model.treasury.FinancialAccount.class);
+    classLookup.put(
+        "treasury.financial_account.features",
+        com.stripe.model.treasury.FinancialAccountFeatures.class);
     classLookup.put("treasury.inbound_transfer", com.stripe.model.treasury.InboundTransfer.class);
     classLookup.put("treasury.outbound_payment", com.stripe.model.treasury.OutboundPayment.class);
     classLookup.put("treasury.outbound_transfer", com.stripe.model.treasury.OutboundTransfer.class);

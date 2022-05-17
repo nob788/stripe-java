@@ -102,7 +102,11 @@ public class PaymentIntentUpdateParams extends ApiRequestParams {
   @SerializedName("payment_method_options")
   PaymentMethodOptions paymentMethodOptions;
 
-  /** The list of payment method types (e.g. card) that this PaymentIntent is allowed to use. */
+  /**
+   * The list of payment method types (e.g. card) that this PaymentIntent is allowed to use. Use
+   * automatic_payment_methods to manage payment methods from the <a
+   * href="https://dashboard.stripe.com/settings/payment_methods">Stripe Dashboard</a>.
+   */
   @SerializedName("payment_method_types")
   List<String> paymentMethodTypes;
 

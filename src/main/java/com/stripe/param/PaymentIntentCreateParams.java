@@ -182,7 +182,9 @@ public class PaymentIntentCreateParams extends ApiRequestParams {
 
   /**
    * The list of payment method types (e.g. card) that this PaymentIntent is allowed to use. If this
-   * is not provided, defaults to [&quot;card&quot;].
+   * is not provided, defaults to [&quot;card&quot;]. Use automatic_payment_methods to manage
+   * payment methods from the <a href="https://dashboard.stripe.com/settings/payment_methods">Stripe
+   * Dashboard</a>.
    */
   @SerializedName("payment_method_types")
   List<String> paymentMethodTypes;

@@ -54,8 +54,8 @@ public class TransactionEntry extends ApiResource implements HasId {
    * Type of the flow associated with the TransactionEntry.
    *
    * <p>One of {@code credit_reversal}, {@code debit_reversal}, {@code inbound_transfer}, {@code
-   * other}, {@code outbound_payment}, {@code outbound_transfer}, {@code received_credit}, or {@code
-   * received_debit}.
+   * issuing_authorization}, {@code other}, {@code outbound_payment}, {@code outbound_transfer},
+   * {@code received_credit}, or {@code received_debit}.
    */
   @SerializedName("flow_type")
   String flowType;
@@ -90,12 +90,13 @@ public class TransactionEntry extends ApiResource implements HasId {
    * The specific money movement that generated the TransactionEntry.
    *
    * <p>One of {@code credit_reversal}, {@code credit_reversal_posting}, {@code debit_reversal},
-   * {@code inbound_transfer}, {@code inbound_transfer_return}, {@code other}, {@code
-   * outbound_payment}, {@code outbound_payment_cancellation}, {@code outbound_payment_failure},
-   * {@code outbound_payment_posting}, {@code outbound_payment_return}, {@code outbound_transfer},
-   * {@code outbound_transfer_cancellation}, {@code outbound_transfer_failure}, {@code
-   * outbound_transfer_posting}, {@code outbound_transfer_return}, {@code received_credit}, {@code
-   * received_debit}, {@code received_hold}, or {@code received_hold_release}.
+   * {@code inbound_transfer}, {@code inbound_transfer_return}, {@code issuing_authorization_hold},
+   * {@code issuing_authorization_release}, {@code other}, {@code outbound_payment}, {@code
+   * outbound_payment_cancellation}, {@code outbound_payment_failure}, {@code
+   * outbound_payment_posting}, {@code outbound_payment_return}, {@code outbound_transfer}, {@code
+   * outbound_transfer_cancellation}, {@code outbound_transfer_failure}, {@code
+   * outbound_transfer_posting}, {@code outbound_transfer_return}, {@code received_credit}, or
+   * {@code received_debit}.
    */
   @SerializedName("type")
   String type;

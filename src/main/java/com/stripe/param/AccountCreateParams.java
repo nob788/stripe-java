@@ -5656,11 +5656,11 @@ public class AccountCreateParams extends ApiRequestParams {
     @SerializedName("last_name")
     String lastName;
 
-    /** The Kana varation of the individual's last name (Japan only). */
+    /** The Kana variation of the individual's last name (Japan only). */
     @SerializedName("last_name_kana")
     String lastNameKana;
 
-    /** The Kanji varation of the individual's last name (Japan only). */
+    /** The Kanji variation of the individual's last name (Japan only). */
     @SerializedName("last_name_kanji")
     String lastNameKanji;
 
@@ -5971,13 +5971,13 @@ public class AccountCreateParams extends ApiRequestParams {
         return this;
       }
 
-      /** The Kana varation of the individual's last name (Japan only). */
+      /** The Kana variation of the individual's last name (Japan only). */
       public Builder setLastNameKana(String lastNameKana) {
         this.lastNameKana = lastNameKana;
         return this;
       }
 
-      /** The Kanji varation of the individual's last name (Japan only). */
+      /** The Kanji variation of the individual's last name (Japan only). */
       public Builder setLastNameKanji(String lastNameKanji) {
         this.lastNameKanji = lastNameKanji;
         return this;

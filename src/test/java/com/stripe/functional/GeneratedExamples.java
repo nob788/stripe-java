@@ -881,7 +881,8 @@ class GeneratedExamples extends BaseStripeTest {
 
   @Test
   public void testSetupAttemptList() throws StripeException {
-    SetupAttemptListParams params = SetupAttemptListParams.builder().setLimit(3L).build();
+    SetupAttemptListParams params =
+        SetupAttemptListParams.builder().setLimit(3L).setSetupIntent("si_xyz").build();
 
     SetupAttemptCollection setupAttempts = SetupAttempt.list(params);
     assertNotNull(setupAttempts);
@@ -3514,8 +3515,9 @@ class GeneratedExamples extends BaseStripeTest {
     com.stripe.param.treasury.FinancialAccountUpdateFeaturesParams params =
         com.stripe.param.treasury.FinancialAccountUpdateFeaturesParams.builder().build();
 
-    com.stripe.model.treasury.Features features = resource.updateFeatures(params);
-    assertNotNull(features);
+    com.stripe.model.treasury.FinancialAccountFeatures financialAccountFeatures =
+        resource.updateFeatures(params);
+    assertNotNull(financialAccountFeatures);
     verifyRequest(
         ApiResource.RequestMethod.POST,
         "/v1/treasury/financial_accounts/fa_xxxxxxxxxxxxx/features",
@@ -3529,8 +3531,9 @@ class GeneratedExamples extends BaseStripeTest {
     com.stripe.param.treasury.FinancialAccountRetrieveFeaturesParams params =
         com.stripe.param.treasury.FinancialAccountRetrieveFeaturesParams.builder().build();
 
-    com.stripe.model.treasury.Features features = resource.retrieveFeatures(params);
-    assertNotNull(features);
+    com.stripe.model.treasury.FinancialAccountFeatures financialAccountFeatures =
+        resource.retrieveFeatures(params);
+    assertNotNull(financialAccountFeatures);
     verifyRequest(
         ApiResource.RequestMethod.GET,
         "/v1/treasury/financial_accounts/fa_xxxxxxxxxxxxx/features",
