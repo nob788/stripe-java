@@ -226,7 +226,7 @@ public class ReceivedCredit extends ApiResource implements HasId {
 
     /** The expandable object of the source flow. */
     @SerializedName("source_flow_details")
-    SourceFlowsDetails sourceFlowDetails;
+    SourceFlowDetails sourceFlowDetails;
 
     /**
      * The type of flow that originated the ReceivedCredit (for example, {@code outbound_payment}).
@@ -237,7 +237,7 @@ public class ReceivedCredit extends ApiResource implements HasId {
     @Getter
     @Setter
     @EqualsAndHashCode(callSuper = false)
-    public static class SourceFlowsDetails extends StripeObject {
+    public static class SourceFlowDetails extends StripeObject {
       /**
        * You can reverse some <a
        * href="https://stripe.com/docs/api#received_credits">ReceivedCredits</a> depending on their

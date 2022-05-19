@@ -44,7 +44,7 @@ public class InitiatingPaymentMethodDetails extends StripeObject {
   String type;
 
   @SerializedName("us_bank_account")
-  USBankAccount usBankAccount;
+  UsBankAccount usBankAccount;
 
   @Getter
   @Setter
@@ -68,7 +68,7 @@ public class InitiatingPaymentMethodDetails extends StripeObject {
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
-  public static class USBankAccount extends StripeObject {
+  public static class UsBankAccount extends StripeObject {
     /** Bank name. */
     @SerializedName("bank_name")
     String bankName;

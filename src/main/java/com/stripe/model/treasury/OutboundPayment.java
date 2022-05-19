@@ -61,7 +61,7 @@ public class OutboundPayment extends ApiResource implements HasId {
 
   /** Details about the PaymentMethod for an OutboundPayment. */
   @SerializedName("destination_payment_method_details")
-  PaymentMethodDetails destinationPaymentMethodDetails;
+  DestinationPaymentMethodDetails destinationPaymentMethodDetails;
 
   /** Details about the end user. */
   @SerializedName("end_user_details")
@@ -112,7 +112,7 @@ public class OutboundPayment extends ApiResource implements HasId {
 
   /** Details about a returned OutboundPayment. Only set when the status is {@code returned}. */
   @SerializedName("returned_details")
-  ReturnStatus returnedDetails;
+  ReturnedDetails returnedDetails;
 
   /**
    * The description that appears on the receiving end for an OutboundPayment (for example, bank
@@ -309,27 +309,7 @@ public class OutboundPayment extends ApiResource implements HasId {
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
-  public static class EndUserDetails extends StripeObject {
-    /**
-     * IP address of the user initiating the OutboundPayment. Set if {@code present} is set to
-     * {@code true}. IP address collection is required for risk and compliance reasons. This will be
-     * used to help determine if the OutboundPayment is authorized or should be blocked.
-     */
-    @SerializedName("ip_address")
-    String ipAddress;
-
-    /**
-     * {@code true`` if the OutboundPayment creation request is being made on behalf of an end user
-     * by a platform. Otherwise, }false`.
-     */
-    @SerializedName("present")
-    Boolean present;
-  }
-
-  @Getter
-  @Setter
-  @EqualsAndHashCode(callSuper = false)
-  public static class PaymentMethodDetails extends StripeObject {
+  public static class DestinationPaymentMethodDetails extends StripeObject {
     @SerializedName("billing_details")
     BillingDetails billingDetails;
 
@@ -417,7 +397,27 @@ public class OutboundPayment extends ApiResource implements HasId {
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
-  public static class ReturnStatus extends StripeObject {
+  public static class EndUserDetails extends StripeObject {
+    /**
+     * IP address of the user initiating the OutboundPayment. Set if {@code present} is set to
+     * {@code true}. IP address collection is required for risk and compliance reasons. This will be
+     * used to help determine if the OutboundPayment is authorized or should be blocked.
+     */
+    @SerializedName("ip_address")
+    String ipAddress;
+
+    /**
+     * {@code true`` if the OutboundPayment creation request is being made on behalf of an end user
+     * by a platform. Otherwise, }false`.
+     */
+    @SerializedName("present")
+    Boolean present;
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(callSuper = false)
+  public static class ReturnedDetails extends StripeObject {
     /**
      * Reason for the return.
      *

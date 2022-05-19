@@ -100,7 +100,7 @@ public class InboundTransfer extends ApiResource implements HasId {
 
   /** Details about the PaymentMethod for an InboundTransfer. */
   @SerializedName("origin_payment_method_details")
-  PaymentMethodDetails originPaymentMethodDetails;
+  OriginPaymentMethodDetails originPaymentMethodDetails;
 
   /**
    * Returns {@code true} if the funds for an InboundTransfer were returned after the
@@ -318,7 +318,7 @@ public class InboundTransfer extends ApiResource implements HasId {
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
-  public static class PaymentMethodDetails extends StripeObject {
+  public static class OriginPaymentMethodDetails extends StripeObject {
     @SerializedName("billing_details")
     BillingDetails billingDetails;
 

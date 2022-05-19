@@ -53,7 +53,7 @@ public class OutboundTransfer extends ApiResource implements HasId {
   String destinationPaymentMethod;
 
   @SerializedName("destination_payment_method_details")
-  PaymentMethodDetails destinationPaymentMethodDetails;
+  DestinationPaymentMethodDetails destinationPaymentMethodDetails;
 
   /** The date when funds are expected to arrive in the destination account. */
   @SerializedName("expected_arrival_date")
@@ -301,7 +301,7 @@ public class OutboundTransfer extends ApiResource implements HasId {
   @Getter
   @Setter
   @EqualsAndHashCode(callSuper = false)
-  public static class PaymentMethodDetails extends StripeObject {
+  public static class DestinationPaymentMethodDetails extends StripeObject {
     @SerializedName("billing_details")
     BillingDetails billingDetails;
 
