@@ -4,6 +4,7 @@ package com.stripe.model.treasury;
 import com.google.gson.annotations.SerializedName;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Address;
 import com.stripe.model.ExpandableField;
 import com.stripe.model.HasId;
 import com.stripe.model.StripeObject;
@@ -315,6 +316,22 @@ public class OutboundTransfer extends ApiResource implements HasId {
 
     @SerializedName("us_bank_account")
     UsBankAccount usBankAccount;
+
+    @Getter
+    @Setter
+    @EqualsAndHashCode(callSuper = false)
+    public static class BillingDetails extends StripeObject {
+      @SerializedName("address")
+      Address address;
+
+      /** Email address. */
+      @SerializedName("email")
+      String email;
+
+      /** Full name. */
+      @SerializedName("name")
+      String name;
+    }
 
     @Getter
     @Setter
